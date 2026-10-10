@@ -10,33 +10,158 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedPlansRouteImport } from './routes/_authenticated/plans'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedSubscriptionsStatusRouteImport } from './routes/_authenticated/subscriptions.$status'
+import { Route as ApiPublicV1PlansRouteImport } from './routes/api/public/v1/plans'
+import { Route as ApiPublicV1UsageRouteImport } from './routes/api/public/v1/usage'
+import { Route as ApiPublicV1VerifyRouteImport } from './routes/api/public/v1/verify'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAuditRoute = AuthenticatedAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPlansRoute = AuthenticatedPlansRouteImport.update({
+  id: '/plans',
+  path: '/plans',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSubscriptionsStatusRoute =
+  AuthenticatedSubscriptionsStatusRouteImport.update({
+    id: '/subscriptions/$status',
+    path: '/subscriptions/$status',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const ApiPublicV1PlansRoute = ApiPublicV1PlansRouteImport.update({
+  id: '/api/public/v1/plans',
+  path: '/api/public/v1/plans',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicV1UsageRoute = ApiPublicV1UsageRouteImport.update({
+  id: '/api/public/v1/usage',
+  path: '/api/public/v1/usage',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicV1VerifyRoute = ApiPublicV1VerifyRouteImport.update({
+  id: '/api/public/v1/verify',
+  path: '/api/public/v1/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/audit': typeof AuthenticatedAuditRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/plans': typeof AuthenticatedPlansRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/subscriptions/$status': typeof AuthenticatedSubscriptionsStatusRoute
+  '/api/public/v1/plans': typeof ApiPublicV1PlansRoute
+  '/api/public/v1/usage': typeof ApiPublicV1UsageRoute
+  '/api/public/v1/verify': typeof ApiPublicV1VerifyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/audit': typeof AuthenticatedAuditRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/plans': typeof AuthenticatedPlansRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/subscriptions/$status': typeof AuthenticatedSubscriptionsStatusRoute
+  '/api/public/v1/plans': typeof ApiPublicV1PlansRoute
+  '/api/public/v1/usage': typeof ApiPublicV1UsageRoute
+  '/api/public/v1/verify': typeof ApiPublicV1VerifyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_authenticated/audit': typeof AuthenticatedAuditRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/plans': typeof AuthenticatedPlansRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/subscriptions/$status': typeof AuthenticatedSubscriptionsStatusRoute
+  '/api/public/v1/plans': typeof ApiPublicV1PlansRoute
+  '/api/public/v1/usage': typeof ApiPublicV1UsageRoute
+  '/api/public/v1/verify': typeof ApiPublicV1VerifyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/audit'
+    | '/dashboard'
+    | '/plans'
+    | '/settings'
+    | '/subscriptions/$status'
+    | '/api/public/v1/plans'
+    | '/api/public/v1/usage'
+    | '/api/public/v1/verify'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/audit'
+    | '/dashboard'
+    | '/plans'
+    | '/settings'
+    | '/subscriptions/$status'
+    | '/api/public/v1/plans'
+    | '/api/public/v1/usage'
+    | '/api/public/v1/verify'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/audit'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/plans'
+    | '/_authenticated/settings'
+    | '/_authenticated/subscriptions/$status'
+    | '/api/public/v1/plans'
+    | '/api/public/v1/usage'
+    | '/api/public/v1/verify'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  ApiPublicV1PlansRoute: typeof ApiPublicV1PlansRoute
+  ApiPublicV1UsageRoute: typeof ApiPublicV1UsageRoute
+  ApiPublicV1VerifyRoute: typeof ApiPublicV1VerifyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +173,105 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/audit': {
+      id: '/_authenticated/audit'
+      path: '/audit'
+      fullPath: '/audit'
+      preLoaderRoute: typeof AuthenticatedAuditRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/plans': {
+      id: '/_authenticated/plans'
+      path: '/plans'
+      fullPath: '/plans'
+      preLoaderRoute: typeof AuthenticatedPlansRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/subscriptions/$status': {
+      id: '/_authenticated/subscriptions/$status'
+      path: '/subscriptions/$status'
+      fullPath: '/subscriptions/$status'
+      preLoaderRoute: typeof AuthenticatedSubscriptionsStatusRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/public/v1/plans': {
+      id: '/api/public/v1/plans'
+      path: '/api/public/v1/plans'
+      fullPath: '/api/public/v1/plans'
+      preLoaderRoute: typeof ApiPublicV1PlansRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/usage': {
+      id: '/api/public/v1/usage'
+      path: '/api/public/v1/usage'
+      fullPath: '/api/public/v1/usage'
+      preLoaderRoute: typeof ApiPublicV1UsageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/verify': {
+      id: '/api/public/v1/verify'
+      path: '/api/public/v1/verify'
+      fullPath: '/api/public/v1/verify'
+      preLoaderRoute: typeof ApiPublicV1VerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedPlansRoute: typeof AuthenticatedPlansRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedSubscriptionsStatusRoute: typeof AuthenticatedSubscriptionsStatusRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAuditRoute: AuthenticatedAuditRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedPlansRoute: AuthenticatedPlansRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedSubscriptionsStatusRoute: AuthenticatedSubscriptionsStatusRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
+  ApiPublicV1PlansRoute: ApiPublicV1PlansRoute,
+  ApiPublicV1UsageRoute: ApiPublicV1UsageRoute,
+  ApiPublicV1VerifyRoute: ApiPublicV1VerifyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
