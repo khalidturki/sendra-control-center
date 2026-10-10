@@ -354,7 +354,20 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_list_users: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          is_admin: boolean
+          user_id: string
+        }[]
+      }
       admin_rotate_api_key: { Args: { _client_id: string }; Returns: string }
+      admin_set_admin: {
+        Args: { _grant: boolean; _user_id: string }
+        Returns: undefined
+      }
       admin_set_suspended: {
         Args: { _subscription_id: string; _suspend: boolean }
         Returns: {
