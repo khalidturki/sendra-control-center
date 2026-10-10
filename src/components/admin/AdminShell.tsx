@@ -1,11 +1,10 @@
-import { Link, Outlet, useNavigate } from "@tanstack/react-router";
+import { Link, Outlet, useNavigate, useRouteContext } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import {
   LayoutDashboard, Clock, CheckCircle2, CalendarX2, PauseCircle, Layers, ScrollText, Settings, LogOut, Menu, Send, Loader2, ShieldAlert,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { Route as AuthedRoute } from "@/routes/_authenticated/route";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useSubscriptions } from "@/lib/sendra";
@@ -34,7 +33,7 @@ function useSignOut() {
 }
 
 export function AdminShell() {
-  const { user } = AuthedRoute.useRouteContext();
+  const { user } = useRouteContext({ from: "/_authenticated" });
   const admin = useIsAdmin();
   const signOut = useSignOut();
   const [open, setOpen] = useState(false);
