@@ -87,9 +87,9 @@ export function CreateSubscriptionDialog({ open, onOpenChange }: { open: boolean
       const r = clientSchema.safeParse(form);
       if (!r.success) r.error.issues.forEach((i) => (errs[String(i.path[0])] = i.message));
       else parsed = r.data;
-    } else if (!clientId) errs.client = "Select a client";
-    if (!planId) errs.plan = "Select a plan";
-    if (notes.length > 1000) errs.notes = "Max 1000 characters";
+    } else if (!clientId) errs["client"] = "Select a client";
+    if (!planId) errs["plan"] = "Select a plan";
+    if (notes.length > 1000) errs["notes"] = "Max 1000 characters";
     setErrors(errs);
     if (Object.keys(errs).length) return;
 
@@ -211,11 +211,11 @@ export function EditSubscriptionDialog({ sub, onOpenChange }: { sub: Subscriptio
     const r = clientSchema.safeParse(form);
     if (!r.success) r.error.issues.forEach((i) => (errs[String(i.path[0])] = i.message));
     const p = Number(price);
-    if (!Number.isFinite(p) || p < 0) errs.price = "Enter a valid price";
+    if (!Number.isFinite(p) || p < 0) errs["price"] = "Enter a valid price";
     if (sub.status !== "PENDING") {
-      if (!start) errs.start = "Required";
-      if (!expiry) errs.expiry = "Required";
-      if (start && expiry && new Date(expiry) <= new Date(start)) errs.expiry = "Expiry must be after start";
+      if (!start) errs["start"] = "Required";
+      if (!expiry) errs["expiry"] = "Required";
+      if (start && expiry && new Date(expiry) <= new Date(start)) errs["expiry"] = "Expiry must be after start";
     }
     setErrors(errs);
     if (Object.keys(errs).length || !r.success) return;
