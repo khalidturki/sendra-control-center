@@ -111,7 +111,7 @@ function Dashboard() {
           <div className="mt-4 h-64">
             {loading ? <Skeleton className="h-full w-full" /> : (
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={extras.data?.trend}>
+                <AreaChart data={extras.data?.trend ?? []}>
                   <defs>
                     <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.35} />

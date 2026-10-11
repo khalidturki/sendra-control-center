@@ -29,7 +29,7 @@ function PlansPage() {
 
   async function toggle(p: Plan) {
     const { error } = await supabase.from("plans").update({ is_active: !p.is_active }).eq("id", p.id);
-    if (error) return toast.error(errMsg(error));
+    if (error) return void toast.error(errMsg(error));
     toast.success(`${p.name} ${p.is_active ? "deactivated" : "activated"}`);
     invalidate();
   }
@@ -90,15 +90,15 @@ function PlanDialog({ plan, onClose }: { plan: Plan | "new" | null; onClose: () 
 
   async function save() {
     const price = Number(f.price), lim = Number(f.daily_limit), dur = Number(f.duration_days);
-    if (!f.name.trim() || f.name.length > 60) return setErr("Name is required (max 60 chars)");
-    if (!Number.isFinite(price) || price < 0) return setErr("Price must be 0 or more");
-    if (!f.unlimited && (!Number.isInteger(lim) || lim < 1)) return setErr("Daily limit must be a whole number above 0");
-    if (!Number.isInteger(dur) || dur < 1) return setErr("Duration must be at least 1 day");
+    if (!f.name.trim() || f.name.length > 60) return void setErr("Name is required (max 60 chars)");
+    if (!Number.isFinite(price) || price < 0) return void setErr("Price must be 0 or more");
+    if (!f.unlimited && (!Number.isInteger(lim) || lim < 1)) return void setErr("Daily limit must be a whole number above 0");
+    if (!Number.isInteger(dur) || dur < 1) return void setErr("Duration must be at least 1 day");
     setSaving(true);
     const row = { name: f.name.trim(), description: f.description.trim().slice(0, 500), price, daily_limit: f.unlimited ? null : lim, duration_days: dur, is_active: f.is_active };
     const { error } = plan === "new" ? await supabase.from("plans").insert(row) : await supabase.from("plans").update(row).eq("id", (plan as Plan).id);
     setSaving(false);
-    if (error) return setErr(error.code === "23505" ? "A plan with this name already exists" : errMsg(error));
+    if (error) return void setErr(error.code === "23505" ? "A plan with this name already exists" : errMsg(error));
     toast.success("Plan saved"); invalidate(); onClose();
   }
 
