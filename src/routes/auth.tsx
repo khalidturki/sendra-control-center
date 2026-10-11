@@ -110,12 +110,12 @@ function AuthPage() {
                 <div className="space-y-1.5">
                   <Label htmlFor="email">Email</Label>
                   <Input id="email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-                  {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+                  {errors["email"] && <p className="text-xs text-destructive">{errors["email"]}</p>}
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="password">Password</Label>
                   <Input id="password" type="password" autoComplete={mode === "signin" ? "current-password" : "new-password"} value={password} onChange={(e) => setPassword(e.target.value)} />
-                  {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
+                  {errors["password"] && <p className="text-xs text-destructive">{errors["password"]}</p>}
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading && <Loader2 className="h-4 w-4 animate-spin" />}

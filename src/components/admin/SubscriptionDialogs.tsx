@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { cloneElement, isValidElement, useEffect, useId, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -24,11 +24,13 @@ const clientSchema = z.object({
   company: z.string().trim().max(120),
 });
 
-function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
+function Field({ label, error, children }: { label: string; error?: string | undefined; children: React.ReactNode }) {
+  const id = useId();
+  const child = isValidElement(children) ? cloneElement(children as React.ReactElement<{ id?: string }>, { id }) : children;
   return (
     <div className="space-y-1.5">
-      <Label className="text-xs">{label}</Label>
-      {children}
+      <Label htmlFor={id} className="text-xs">{label}</Label>
+      {child}
       {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   );
@@ -87,9 +89,9 @@ export function CreateSubscriptionDialog({ open, onOpenChange }: { open: boolean
       const r = clientSchema.safeParse(form);
       if (!r.success) r.error.issues.forEach((i) => (errs[String(i.path[0])] = i.message));
       else parsed = r.data;
-    } else if (!clientId) errs.client = "Select a client";
-    if (!planId) errs.plan = "Select a plan";
-    if (notes.length > 1000) errs.notes = "Max 1000 characters";
+    } else if (!clientId) errs["client"] = "Select a client";
+    if (!planId) errs["plan"] = "Select a plan";
+    if (notes.length > 1000) errs["notes"] = "Max 1000 characters";
     setErrors(errs);
     if (Object.keys(errs).length) return;
 
@@ -138,13 +140,13 @@ export function CreateSubscriptionDialog({ open, onOpenChange }: { open: boolean
         <div className="grid gap-4">
           {mode === "new" ? (
             <div className="grid gap-3 sm:grid-cols-2">
-              <div className="sm:col-span-2"><Field label="Client name *" error={errors.name}><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field></div>
-              <Field label="Email" error={errors.email}><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></Field>
-              <Field label="Phone" error={errors.phone}><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></Field>
-              <div className="sm:col-span-2"><Field label="Company" error={errors.company}><Input value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} /></Field></div>
+              <div className="sm:col-span-2"><Field label="Client name *" error={errors["name"]}><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field></div>
+              <Field label="Email" error={errors["email"]}><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></Field>
+              <Field label="Phone" error={errors["phone"]}><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></Field>
+              <div className="sm:col-span-2"><Field label="Company" error={errors["company"]}><Input value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} /></Field></div>
             </div>
           ) : (
-            <Field label="Client *" error={errors.client}>
+            <Field label="Client *" error={errors["client"]}>
               <Select value={clientId} onValueChange={setClientId}>
                 <SelectTrigger><SelectValue placeholder={eligible.isLoading ? "Loading…" : eligible.data?.length ? "Choose a client" : "No clients without an open subscription"} /></SelectTrigger>
                 <SelectContent>
@@ -153,8 +155,8 @@ export function CreateSubscriptionDialog({ open, onOpenChange }: { open: boolean
               </Select>
             </Field>
           )}
-          <Field label="Plan *" error={errors.plan}><PlanSelect value={planId} onChange={setPlanId} /></Field>
-          <Field label="Notes" error={errors.notes}><Textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} /></Field>
+          <Field label="Plan *" error={errors["plan"]}><PlanSelect value={planId} onChange={setPlanId} /></Field>
+          <Field label="Notes" error={errors["notes"]}><Textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} /></Field>
           <div className="space-y-3 rounded-lg border bg-muted/40 p-3">
             <label className="flex items-center justify-between gap-3 text-sm">
               <span>Approve and activate immediately</span>
@@ -211,11 +213,11 @@ export function EditSubscriptionDialog({ sub, onOpenChange }: { sub: Subscriptio
     const r = clientSchema.safeParse(form);
     if (!r.success) r.error.issues.forEach((i) => (errs[String(i.path[0])] = i.message));
     const p = Number(price);
-    if (!Number.isFinite(p) || p < 0) errs.price = "Enter a valid price";
+    if (!Number.isFinite(p) || p < 0) errs["price"] = "Enter a valid price";
     if (sub.status !== "PENDING") {
-      if (!start) errs.start = "Required";
-      if (!expiry) errs.expiry = "Required";
-      if (start && expiry && new Date(expiry) <= new Date(start)) errs.expiry = "Expiry must be after start";
+      if (!start) errs["start"] = "Required";
+      if (!expiry) errs["expiry"] = "Required";
+      if (start && expiry && new Date(expiry) <= new Date(start)) errs["expiry"] = "Expiry must be after start";
     }
     setErrors(errs);
     if (Object.keys(errs).length || !r.success) return;
@@ -246,7 +248,7 @@ export function EditSubscriptionDialog({ sub, onOpenChange }: { sub: Subscriptio
     setRotating(true);
     const { data, error } = await supabase.rpc("admin_rotate_api_key", { _client_id: sub.client_id });
     setRotating(false);
-    if (error) return toast.error(errMsg(error));
+    if (error) return void toast.error(errMsg(error));
     setApiKey(data);
     invalidate();
     toast.success("API key rotated — the old key no longer works");
@@ -262,17 +264,17 @@ export function EditSubscriptionDialog({ sub, onOpenChange }: { sub: Subscriptio
         <div className="grid gap-5">
           <section className="grid gap-3 sm:grid-cols-2">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground sm:col-span-2">Client</p>
-            <div className="sm:col-span-2"><Field label="Name *" error={errors.name}><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field></div>
-            <Field label="Email" error={errors.email}><Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></Field>
-            <Field label="Phone" error={errors.phone}><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></Field>
+            <div className="sm:col-span-2"><Field label="Name *" error={errors["name"]}><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field></div>
+            <Field label="Email" error={errors["email"]}><Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></Field>
+            <Field label="Phone" error={errors["phone"]}><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></Field>
             <div className="sm:col-span-2"><Field label="Company"><Input value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} /></Field></div>
           </section>
           <section className="grid gap-3 sm:grid-cols-2">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground sm:col-span-2">Subscription</p>
             <Field label="Plan"><PlanSelect value={planId} onChange={setPlanId} /></Field>
-            <Field label="Price" error={errors.price}><Input type="number" min="0" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} /></Field>
-            <Field label="Start" error={errors.start}><Input type="datetime-local" value={start} onChange={(e) => setStart(e.target.value)} /></Field>
-            <Field label="Expiry" error={errors.expiry}><Input type="datetime-local" value={expiry} onChange={(e) => setExpiry(e.target.value)} /></Field>
+            <Field label="Price" error={errors["price"]}><Input type="number" min="0" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} /></Field>
+            <Field label="Start" error={errors["start"]}><Input type="datetime-local" value={start} onChange={(e) => setStart(e.target.value)} /></Field>
+            <Field label="Expiry" error={errors["expiry"]}><Input type="datetime-local" value={expiry} onChange={(e) => setExpiry(e.target.value)} /></Field>
             <div className="sm:col-span-2"><Field label="Notes"><Textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} /></Field></div>
           </section>
           <section className="rounded-lg border bg-muted/40 p-3">
@@ -319,14 +321,14 @@ export function ActivateDialog({ sub, mode, onOpenChange }: { sub: SubscriptionR
   async function save() {
     if (!sub) return;
     const d = Number(days); const a = Number(amount);
-    if (!Number.isInteger(d) || d < 1 || d > 3650) return setError("Duration must be 1–3650 days");
-    if (recordPayment && (!Number.isFinite(a) || a < 0)) return setError("Enter a valid payment amount");
+    if (!Number.isInteger(d) || d < 1 || d > 3650) return void setError("Duration must be 1–3650 days");
+    if (recordPayment && (!Number.isFinite(a) || a < 0)) return void setError("Enter a valid payment amount");
     setSaving(true);
     const { error } = await supabase.rpc("admin_activate_subscription", {
       _subscription_id: sub.id, _plan_id: planId, _days: d, _record_payment: recordPayment, _payment_amount: a,
     });
     setSaving(false);
-    if (error) return toast.error(errMsg(error));
+    if (error) return void toast.error(errMsg(error));
     toast.success(mode === "approve" ? "Subscription approved" : "Subscription renewed");
     invalidate();
     onOpenChange(false);
@@ -383,7 +385,7 @@ export function ConfirmActionDialog({ target, onOpenChange }: { target: { sub: S
       ? await supabase.rpc("admin_set_suspended", { _subscription_id: sub.id, _suspend: kind === "suspend" })
       : await supabase.from("subscriptions").delete().eq("id", sub.id);
     setBusy(false);
-    if (res.error) return toast.error(errMsg(res.error));
+    if (res.error) return void toast.error(errMsg(res.error));
     toast.success(`${confirmCopy[kind].cta} complete`);
     invalidate();
     onOpenChange(false);

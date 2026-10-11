@@ -15,6 +15,20 @@
       "when": 1791650958177,
       "tag": "0001_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791709838982,
+      "tag": "0002_migration",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791709863819,
+      "tag": "0003_migration",
+      "breakpoints": true
     }
   ]
 }

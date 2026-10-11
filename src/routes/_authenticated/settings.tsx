@@ -29,16 +29,16 @@ function SettingsPage() {
   });
 
   async function save() {
-    if (!/^[A-Z]{3}$/.test(cur)) return toast.error("Currency must be a 3-letter code, e.g. USD");
+    if (!/^[A-Z]{3}$/.test(cur)) return void toast.error("Currency must be a 3-letter code, e.g. USD");
     setSaving(true);
     const { error } = await supabase.from("app_settings").update({ usage_timezone: tz.trim(), currency: cur }).eq("id", true);
     setSaving(false);
-    if (error) return toast.error(errMsg(error));
+    if (error) return void toast.error(errMsg(error));
     toast.success("Settings saved"); invalidate();
   }
   async function setAdmin(id: string, grant: boolean) {
     const { error } = await supabase.rpc("admin_set_admin", { _user_id: id, _grant: grant });
-    if (error) return toast.error(errMsg(error));
+    if (error) return void toast.error(errMsg(error));
     toast.success(grant ? "Admin access granted" : "Admin access removed"); users.refetch();
   }
   const base = typeof window !== "undefined" ? window.location.origin : "";
