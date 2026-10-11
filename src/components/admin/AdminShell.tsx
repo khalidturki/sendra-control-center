@@ -2,13 +2,14 @@ import { Link, Outlet, useNavigate, useRouteContext } from "@tanstack/react-rout
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import {
-  LayoutDashboard, Clock, CheckCircle2, CalendarX2, PauseCircle, Layers, ScrollText, Settings, LogOut, Menu, Send, Loader2, ShieldAlert,
+  LayoutDashboard, Clock, CheckCircle2, CalendarX2, PauseCircle, Layers, ScrollText, Settings, LogOut, Menu, Loader2, ShieldAlert,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useSubscriptions } from "@/lib/sendra";
 import { cn } from "@/lib/utils";
+import logoAsset from "@/assets/sendra-logo.png.asset.json";
 
 function useIsAdmin() {
   return useQuery({
@@ -104,9 +105,7 @@ function SidebarContent({ email, onSignOut, onNavigate }: { email: string; onSig
   return (
     <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
       <div className="flex items-center gap-2.5 px-5 py-6">
-        <div className="grid h-9 w-9 place-items-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground shadow-lg shadow-sidebar-primary/20">
-          <Send className="h-4 w-4" />
-        </div>
+        <img src={logoAsset.url} alt="Sendra" className="h-9 w-10 object-contain" />
         <div>
           <p className="font-display text-[15px] font-semibold leading-none text-sidebar-accent-foreground">Sendra Admin</p>
           <p className="mt-1 text-[11px] text-sidebar-foreground/60">v2.0 console</p>
