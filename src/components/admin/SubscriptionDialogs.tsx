@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { cloneElement, isValidElement, useEffect, useId, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -25,10 +25,12 @@ const clientSchema = z.object({
 });
 
 function Field({ label, error, children }: { label: string; error?: string | undefined; children: React.ReactNode }) {
+  const id = useId();
+  const child = isValidElement(children) ? cloneElement(children as React.ReactElement<{ id?: string }>, { id }) : children;
   return (
     <div className="space-y-1.5">
-      <Label className="text-xs">{label}</Label>
-      {children}
+      <Label htmlFor={id} className="text-xs">{label}</Label>
+      {child}
       {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   );
