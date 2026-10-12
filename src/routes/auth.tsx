@@ -2,7 +2,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Loader2, Send } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import logoAsset from "@/assets/sendra-logo.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,9 +71,7 @@ function AuthPage() {
         <div className="pointer-events-none absolute -right-32 -top-32 h-96 w-96 rounded-full bg-sidebar-primary/20 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-40 left-10 h-96 w-96 rounded-full bg-sidebar-primary/10 blur-3xl" />
         <div className="relative flex items-center gap-2.5">
-          <div className="grid h-9 w-9 place-items-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-            <Send className="h-4 w-4" />
-          </div>
+          <img src={logoAsset.url} alt="Sendra" className="h-9 w-10 object-contain" />
           <span className="font-display text-lg font-semibold text-sidebar-accent-foreground">Sendra Admin</span>
         </div>
         <div className="relative max-w-md">
