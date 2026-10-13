@@ -14,8 +14,8 @@ export const Route = createFileRoute("/api/public/v1/payment-requests")({
         if (!plan || !UUID.test(plan)) return json({ error: "INVALID_REQUEST" }, 400);
         const { data, error } = await userClient(token).rpc("customer_request_plan", {
           _plan_id: plan,
-          _payer_phone: str(b?.["payer_phone"], 30) ?? undefined,
-          _reference: str(b?.["reference"], 200) ?? undefined,
+          ...(str(b?.["payer_phone"], 30) ? { _payer_phone: str(b?.["payer_phone"], 30)! } : {}),
+          ...(str(b?.["reference"], 200) ? { _reference: str(b?.["reference"], 200)! } : {}),
         });
         if (error) return dbError(error);
         const r = data as { whatsapp_number: string; whatsapp_message: string };
