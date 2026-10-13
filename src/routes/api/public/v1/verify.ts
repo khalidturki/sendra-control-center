@@ -1,11 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { json, publicClient, readBody, str } from "@/lib/public-api.server";
+import { bearer, dbError, json, publicClient, readBody, str, userClient } from "@/lib/public-api.server";
 
 export const Route = createFileRoute("/api/public/v1/verify")({
   server: {
     handlers: {
       POST: async ({ request }) => {
         const b = await readBody(request);
+        const token = bearer(request);
+        if (token) {
+          const inst = str(b?.["installation_id"], 200);
+          if (!inst) return json({ allowed: false, reason: "INVALID_REQUEST" }, 400);
+          const { data, error } = await userClient(token).rpc("customer_status", { _installation_id: inst });
+          return error ? dbError(error) : json(data);
+        }
         const id = str(b?.["client_id"], 40), key = str(b?.["api_key"], 100);
         if (!id || !key) return json({ allowed: false, reason: "INVALID_REQUEST" }, 400);
         const { data, error } = await publicClient().rpc("api_check_subscription", { _client_code: id, _api_key: key });
