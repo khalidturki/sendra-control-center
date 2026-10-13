@@ -17,6 +17,9 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedPlansRouteImport } from './routes/_authenticated/plans'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedSubscriptionsStatusRouteImport } from './routes/_authenticated/subscriptions.$status'
+import { Route as ApiPublicV1DevicesRouteImport } from './routes/api/public/v1/devices'
+import { Route as ApiPublicV1MeRouteImport } from './routes/api/public/v1/me'
+import { Route as ApiPublicV1PaymentRequestsRouteImport } from './routes/api/public/v1/payment-requests'
 import { Route as ApiPublicV1PlansRouteImport } from './routes/api/public/v1/plans'
 import { Route as ApiPublicV1UsageRouteImport } from './routes/api/public/v1/usage'
 import { Route as ApiPublicV1VerifyRouteImport } from './routes/api/public/v1/verify'
@@ -61,6 +64,22 @@ const AuthenticatedSubscriptionsStatusRoute =
     path: '/subscriptions/$status',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicV1DevicesRoute = ApiPublicV1DevicesRouteImport.update({
+  id: '/api/public/v1/devices',
+  path: '/api/public/v1/devices',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicV1MeRoute = ApiPublicV1MeRouteImport.update({
+  id: '/api/public/v1/me',
+  path: '/api/public/v1/me',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicV1PaymentRequestsRoute =
+  ApiPublicV1PaymentRequestsRouteImport.update({
+    id: '/api/public/v1/payment-requests',
+    path: '/api/public/v1/payment-requests',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicV1PlansRoute = ApiPublicV1PlansRouteImport.update({
   id: '/api/public/v1/plans',
   path: '/api/public/v1/plans',
@@ -85,6 +104,9 @@ export interface FileRoutesByFullPath {
   '/plans': typeof AuthenticatedPlansRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/subscriptions/$status': typeof AuthenticatedSubscriptionsStatusRoute
+  '/api/public/v1/devices': typeof ApiPublicV1DevicesRoute
+  '/api/public/v1/me': typeof ApiPublicV1MeRoute
+  '/api/public/v1/payment-requests': typeof ApiPublicV1PaymentRequestsRoute
   '/api/public/v1/plans': typeof ApiPublicV1PlansRoute
   '/api/public/v1/usage': typeof ApiPublicV1UsageRoute
   '/api/public/v1/verify': typeof ApiPublicV1VerifyRoute
@@ -97,6 +119,9 @@ export interface FileRoutesByTo {
   '/plans': typeof AuthenticatedPlansRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/subscriptions/$status': typeof AuthenticatedSubscriptionsStatusRoute
+  '/api/public/v1/devices': typeof ApiPublicV1DevicesRoute
+  '/api/public/v1/me': typeof ApiPublicV1MeRoute
+  '/api/public/v1/payment-requests': typeof ApiPublicV1PaymentRequestsRoute
   '/api/public/v1/plans': typeof ApiPublicV1PlansRoute
   '/api/public/v1/usage': typeof ApiPublicV1UsageRoute
   '/api/public/v1/verify': typeof ApiPublicV1VerifyRoute
@@ -111,6 +136,9 @@ export interface FileRoutesById {
   '/_authenticated/plans': typeof AuthenticatedPlansRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/subscriptions/$status': typeof AuthenticatedSubscriptionsStatusRoute
+  '/api/public/v1/devices': typeof ApiPublicV1DevicesRoute
+  '/api/public/v1/me': typeof ApiPublicV1MeRoute
+  '/api/public/v1/payment-requests': typeof ApiPublicV1PaymentRequestsRoute
   '/api/public/v1/plans': typeof ApiPublicV1PlansRoute
   '/api/public/v1/usage': typeof ApiPublicV1UsageRoute
   '/api/public/v1/verify': typeof ApiPublicV1VerifyRoute
@@ -125,6 +153,9 @@ export interface FileRouteTypes {
     | '/plans'
     | '/settings'
     | '/subscriptions/$status'
+    | '/api/public/v1/devices'
+    | '/api/public/v1/me'
+    | '/api/public/v1/payment-requests'
     | '/api/public/v1/plans'
     | '/api/public/v1/usage'
     | '/api/public/v1/verify'
@@ -137,6 +168,9 @@ export interface FileRouteTypes {
     | '/plans'
     | '/settings'
     | '/subscriptions/$status'
+    | '/api/public/v1/devices'
+    | '/api/public/v1/me'
+    | '/api/public/v1/payment-requests'
     | '/api/public/v1/plans'
     | '/api/public/v1/usage'
     | '/api/public/v1/verify'
@@ -150,6 +184,9 @@ export interface FileRouteTypes {
     | '/_authenticated/plans'
     | '/_authenticated/settings'
     | '/_authenticated/subscriptions/$status'
+    | '/api/public/v1/devices'
+    | '/api/public/v1/me'
+    | '/api/public/v1/payment-requests'
     | '/api/public/v1/plans'
     | '/api/public/v1/usage'
     | '/api/public/v1/verify'
@@ -159,6 +196,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiPublicV1DevicesRoute: typeof ApiPublicV1DevicesRoute
+  ApiPublicV1MeRoute: typeof ApiPublicV1MeRoute
+  ApiPublicV1PaymentRequestsRoute: typeof ApiPublicV1PaymentRequestsRoute
   ApiPublicV1PlansRoute: typeof ApiPublicV1PlansRoute
   ApiPublicV1UsageRoute: typeof ApiPublicV1UsageRoute
   ApiPublicV1VerifyRoute: typeof ApiPublicV1VerifyRoute
@@ -222,6 +262,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSubscriptionsStatusRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/v1/devices': {
+      id: '/api/public/v1/devices'
+      path: '/api/public/v1/devices'
+      fullPath: '/api/public/v1/devices'
+      preLoaderRoute: typeof ApiPublicV1DevicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/me': {
+      id: '/api/public/v1/me'
+      path: '/api/public/v1/me'
+      fullPath: '/api/public/v1/me'
+      preLoaderRoute: typeof ApiPublicV1MeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/payment-requests': {
+      id: '/api/public/v1/payment-requests'
+      path: '/api/public/v1/payment-requests'
+      fullPath: '/api/public/v1/payment-requests'
+      preLoaderRoute: typeof ApiPublicV1PaymentRequestsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/v1/plans': {
       id: '/api/public/v1/plans'
       path: '/api/public/v1/plans'
@@ -269,6 +330,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiPublicV1DevicesRoute: ApiPublicV1DevicesRoute,
+  ApiPublicV1MeRoute: ApiPublicV1MeRoute,
+  ApiPublicV1PaymentRequestsRoute: ApiPublicV1PaymentRequestsRoute,
   ApiPublicV1PlansRoute: ApiPublicV1PlansRoute,
   ApiPublicV1UsageRoute: ApiPublicV1UsageRoute,
   ApiPublicV1VerifyRoute: ApiPublicV1VerifyRoute,

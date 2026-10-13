@@ -18,20 +18,29 @@ export type Database = {
         Row: {
           currency: string
           id: boolean
+          payment_recipient: string
           updated_at: string
           usage_timezone: string
+          ussd_template: string
+          whatsapp_number: string
         }
         Insert: {
           currency?: string
           id?: boolean
+          payment_recipient?: string
           updated_at?: string
           usage_timezone?: string
+          ussd_template?: string
+          whatsapp_number?: string
         }
         Update: {
           currency?: string
           id?: boolean
+          payment_recipient?: string
           updated_at?: string
           usage_timezone?: string
+          ussd_template?: string
+          whatsapp_number?: string
         }
         Relationships: []
       }
@@ -80,6 +89,7 @@ export type Database = {
           notes: string | null
           phone: string | null
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           api_key?: string
@@ -92,6 +102,7 @@ export type Database = {
           notes?: string | null
           phone?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           api_key?: string
@@ -104,8 +115,155 @@ export type Database = {
           notes?: string | null
           phone?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
+      }
+      daily_usage_summary: {
+        Row: {
+          client_id: string
+          success_count: number
+          usage_date: string
+        }
+        Insert: {
+          client_id: string
+          success_count?: number
+          usage_date: string
+        }
+        Update: {
+          client_id?: string
+          success_count?: number
+          usage_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_usage_summary_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      devices: {
+        Row: {
+          client_id: string
+          created_at: string
+          device_name: string | null
+          id: string
+          installation_id: string
+          last_seen_at: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["device_status"]
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          device_name?: string | null
+          id?: string
+          installation_id: string
+          last_seen_at?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["device_status"]
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          device_name?: string | null
+          id?: string
+          installation_id?: string
+          last_seen_at?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["device_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "devices_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_requests: {
+        Row: {
+          admin_note: string | null
+          amount: number
+          client_id: string
+          created_at: string
+          id: string
+          kind: Database["public"]["Enums"]["payment_request_kind"]
+          payer_phone: string | null
+          plan_id: string
+          reference: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["review_status"]
+          subscription_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          admin_note?: string | null
+          amount: number
+          client_id: string
+          created_at?: string
+          id?: string
+          kind: Database["public"]["Enums"]["payment_request_kind"]
+          payer_phone?: string | null
+          plan_id: string
+          reference?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["review_status"]
+          subscription_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          admin_note?: string | null
+          amount?: number
+          client_id?: string
+          created_at?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["payment_request_kind"]
+          payer_phone?: string | null
+          plan_id?: string
+          reference?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["review_status"]
+          subscription_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_requests_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_requests_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_requests_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payments: {
         Row: {
@@ -325,6 +483,38 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _customer_client: {
+        Args: never
+        Returns: {
+          api_key: string
+          client_code: string
+          company: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "clients"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      _device_status: {
+        Args: { _client_id: string; _installation_id: string }
+        Returns: string
+      }
+      _payment_config: { Args: never; Returns: Json }
+      _record_tx: {
+        Args: { _client_id: string; _status: string; _transaction_id: string }
+        Returns: Json
+      }
+      _sub_state: { Args: { _client_id: string }; Returns: Json }
       admin_activate_subscription: {
         Args: {
           _days?: number
@@ -362,6 +552,52 @@ export type Database = {
           is_admin: boolean
           user_id: string
         }[]
+      }
+      admin_review_device: {
+        Args: { _approve: boolean; _device_id: string }
+        Returns: {
+          client_id: string
+          created_at: string
+          device_name: string | null
+          id: string
+          installation_id: string
+          last_seen_at: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["device_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "devices"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_review_payment: {
+        Args: { _approve: boolean; _note?: string; _request_id: string }
+        Returns: {
+          admin_note: string | null
+          amount: number
+          client_id: string
+          created_at: string
+          id: string
+          kind: Database["public"]["Enums"]["payment_request_kind"]
+          payer_phone: string | null
+          plan_id: string
+          reference: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["review_status"]
+          subscription_id: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "payment_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       admin_rotate_api_key: { Args: { _client_id: string }; Returns: string }
       admin_set_admin: {
@@ -416,6 +652,23 @@ export type Database = {
         }
         Returns: Json
       }
+      customer_record_transaction: {
+        Args: {
+          _installation_id: string
+          _status: string
+          _transaction_id: string
+        }
+        Returns: Json
+      }
+      customer_register_device: {
+        Args: { _device_name?: string; _installation_id: string }
+        Returns: Json
+      }
+      customer_request_plan: {
+        Args: { _payer_phone?: string; _plan_id: string; _reference?: string }
+        Returns: Json
+      }
+      customer_status: { Args: { _installation_id: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -425,10 +678,14 @@ export type Database = {
       }
       is_admin: { Args: never; Returns: boolean }
       mark_expired_subscriptions: { Args: never; Returns: number }
+      run_usage_retention: { Args: never; Returns: Json }
       usage_today: { Args: never; Returns: string }
     }
     Enums: {
       app_role: "admin"
+      device_status: "PENDING" | "APPROVED" | "REJECTED" | "REVOKED"
+      payment_request_kind: "PURCHASE" | "RENEWAL" | "PLAN_CHANGE"
+      review_status: "PENDING" | "APPROVED" | "REJECTED"
       subscription_status: "PENDING" | "ACTIVE" | "EXPIRED" | "SUSPENDED"
     }
     CompositeTypes: {
@@ -558,6 +815,9 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin"],
+      device_status: ["PENDING", "APPROVED", "REJECTED", "REVOKED"],
+      payment_request_kind: ["PURCHASE", "RENEWAL", "PLAN_CHANGE"],
+      review_status: ["PENDING", "APPROVED", "REJECTED"],
       subscription_status: ["PENDING", "ACTIVE", "EXPIRED", "SUSPENDED"],
     },
   },
