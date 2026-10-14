@@ -2,7 +2,7 @@ import { Link, Outlet, useNavigate, useRouteContext } from "@tanstack/react-rout
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import {
-  LayoutDashboard, Clock, CheckCircle2, CalendarX2, PauseCircle, Layers, ScrollText, Settings, LogOut, Menu, Loader2, ShieldAlert,
+  LayoutDashboard, Clock, CheckCircle2, CalendarX2, PauseCircle, Layers, ScrollText, Settings, LogOut, Wallet, Smartphone, Menu, Loader2, ShieldAlert,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -92,6 +92,20 @@ export function AdminShell() {
 function SidebarContent({ email, onSignOut, onNavigate }: { email: string; onSignOut: () => void; onNavigate?: () => void }) {
   const subs = useSubscriptions();
   const count = (s: string) => subs.data?.filter((x) => x.status === s).length;
+  const queues = useQuery({
+    queryKey: ["review-counts"],
+    queryFn: async () => {
+      const [p, d] = await Promise.all([
+        supabase.from("payment_requests").select("id", { count: "exact", head: true }).eq("status", "PENDING"),
+        supabase.from("devices").select("id", { count: "exact", head: true }).eq("status", "PENDING"),
+      ]);
+      return { payments: p.count ?? 0, devices: d.count ?? 0 };
+    },
+    refetchInterval: 60_000,
+  });
+  const badge = (n?: number) => (
+    <span className={cn("rounded-md px-1.5 py-0.5 font-mono text-[10px]", n ? "bg-pending text-background" : "bg-sidebar-accent text-sidebar-foreground/80")}>{n ?? "·"}</span>
+  );
   const link = "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground";
   const active = { className: "bg-sidebar-accent text-sidebar-accent-foreground" };
 
@@ -134,6 +148,12 @@ function SidebarContent({ email, onSignOut, onNavigate }: { email: string; onSig
         <div>
           <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-sidebar-foreground/50">Manage</p>
           <div className="space-y-1">
+            <Link to="/payments" className={link} activeProps={active} onClick={onNavigate}>
+              <Wallet className="h-4 w-4" /> <span className="flex-1">Payment requests</span>{badge(queues.data?.payments)}
+            </Link>
+            <Link to="/devices" className={link} activeProps={active} onClick={onNavigate}>
+              <Smartphone className="h-4 w-4" /> <span className="flex-1">Device approvals</span>{badge(queues.data?.devices)}
+            </Link>
             <Link to="/plans" className={link} activeProps={active} onClick={onNavigate}>
               <Layers className="h-4 w-4" /> Plans
             </Link>
