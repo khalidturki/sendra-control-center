@@ -20,7 +20,7 @@ export function CustomerAuthLayout({ title, subtitle, children }: { title: strin
   );
 }
 
-export function FormField({ id, label, error, children }: { id: string; label: string; error?: string; children: ReactNode }) {
+export function FormField({ id, label, error, children }: { id: string; label: string; error?: string | undefined; children: ReactNode }) {
   return (
     <div className="space-y-1.5">
       <Label htmlFor={id}>{label}</Label>
