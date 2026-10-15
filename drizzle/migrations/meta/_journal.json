@@ -36,6 +36,13 @@
       "when": 1791874512988,
       "tag": "0004_customers_payments_devices_retention",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792049714338,
+      "tag": "0005_android_auth_handoff",
+      "breakpoints": true
     }
   ]
 }

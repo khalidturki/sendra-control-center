@@ -16,6 +16,8 @@ export type Database = {
     Tables: {
       app_settings: {
         Row: {
+          android_cert_sha256: string
+          android_package_name: string
           currency: string
           id: boolean
           payment_recipient: string
@@ -25,6 +27,8 @@ export type Database = {
           whatsapp_number: string
         }
         Insert: {
+          android_cert_sha256?: string
+          android_package_name?: string
           currency?: string
           id?: boolean
           payment_recipient?: string
@@ -34,6 +38,8 @@ export type Database = {
           whatsapp_number?: string
         }
         Update: {
+          android_cert_sha256?: string
+          android_package_name?: string
           currency?: string
           id?: boolean
           payment_recipient?: string
@@ -74,6 +80,36 @@ export type Database = {
           entity_id?: string | null
           entity_type?: string
           id?: string
+        }
+        Relationships: []
+      }
+      auth_handoff_codes: {
+        Row: {
+          code_challenge: string
+          code_hash: string
+          created_at: string
+          expires_at: string
+          redirect_uri: string
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          code_challenge: string
+          code_hash: string
+          created_at?: string
+          expires_at: string
+          redirect_uri: string
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          code_challenge?: string
+          code_hash?: string
+          created_at?: string
+          expires_at?: string
+          redirect_uri?: string
+          used_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
