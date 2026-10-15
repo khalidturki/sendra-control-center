@@ -12,12 +12,18 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as DotwellKnownAssetlinksDotjsonRouteImport } from './routes/[.]well-known.assetlinks[.]json'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedDevicesRouteImport } from './routes/_authenticated/devices'
 import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated/payments'
 import { Route as AuthenticatedPlansRouteImport } from './routes/_authenticated/plans'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AccountForgotPasswordRouteImport } from './routes/account/forgot-password'
+import { Route as AccountLoginRouteImport } from './routes/account/login'
+import { Route as AccountResetPasswordRouteImport } from './routes/account/reset-password'
+import { Route as AccountSignupRouteImport } from './routes/account/signup'
+import { Route as AndroidCallbackRouteImport } from './routes/android/callback'
 import { Route as AuthenticatedSubscriptionsStatusRouteImport } from './routes/_authenticated/subscriptions.$status'
 import { Route as ApiPublicV1DevicesRouteImport } from './routes/api/public/v1/devices'
 import { Route as ApiPublicV1MeRouteImport } from './routes/api/public/v1/me'
@@ -25,6 +31,9 @@ import { Route as ApiPublicV1PaymentRequestsRouteImport } from './routes/api/pub
 import { Route as ApiPublicV1PlansRouteImport } from './routes/api/public/v1/plans'
 import { Route as ApiPublicV1UsageRouteImport } from './routes/api/public/v1/usage'
 import { Route as ApiPublicV1VerifyRouteImport } from './routes/api/public/v1/verify'
+import { Route as ApiPublicV1AuthAuthorizeRouteImport } from './routes/api/public/v1/auth/authorize'
+import { Route as ApiPublicV1AuthLogoutRouteImport } from './routes/api/public/v1/auth/logout'
+import { Route as ApiPublicV1AuthTokenRouteImport } from './routes/api/public/v1/auth/token'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,6 +49,12 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DotwellKnownAssetlinksDotjsonRoute =
+  DotwellKnownAssetlinksDotjsonRouteImport.update({
+    id: '/.well-known/assetlinks.json',
+    path: '/.well-known/assetlinks.json',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedAuditRoute = AuthenticatedAuditRouteImport.update({
   id: '/audit',
   path: '/audit',
@@ -69,6 +84,31 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AccountForgotPasswordRoute = AccountForgotPasswordRouteImport.update({
+  id: '/account/forgot-password',
+  path: '/account/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountLoginRoute = AccountLoginRouteImport.update({
+  id: '/account/login',
+  path: '/account/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountResetPasswordRoute = AccountResetPasswordRouteImport.update({
+  id: '/account/reset-password',
+  path: '/account/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountSignupRoute = AccountSignupRouteImport.update({
+  id: '/account/signup',
+  path: '/account/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AndroidCallbackRoute = AndroidCallbackRouteImport.update({
+  id: '/android/callback',
+  path: '/android/callback',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedSubscriptionsStatusRoute =
   AuthenticatedSubscriptionsStatusRouteImport.update({
@@ -107,16 +147,38 @@ const ApiPublicV1VerifyRoute = ApiPublicV1VerifyRouteImport.update({
   path: '/api/public/v1/verify',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicV1AuthAuthorizeRoute =
+  ApiPublicV1AuthAuthorizeRouteImport.update({
+    id: '/api/public/v1/auth/authorize',
+    path: '/api/public/v1/auth/authorize',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicV1AuthLogoutRoute = ApiPublicV1AuthLogoutRouteImport.update({
+  id: '/api/public/v1/auth/logout',
+  path: '/api/public/v1/auth/logout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicV1AuthTokenRoute = ApiPublicV1AuthTokenRouteImport.update({
+  id: '/api/public/v1/auth/token',
+  path: '/api/public/v1/auth/token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/.well-known/assetlinks.json': typeof DotwellKnownAssetlinksDotjsonRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/devices': typeof AuthenticatedDevicesRoute
   '/payments': typeof AuthenticatedPaymentsRoute
   '/plans': typeof AuthenticatedPlansRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/account/forgot-password': typeof AccountForgotPasswordRoute
+  '/account/login': typeof AccountLoginRoute
+  '/account/reset-password': typeof AccountResetPasswordRoute
+  '/account/signup': typeof AccountSignupRoute
+  '/android/callback': typeof AndroidCallbackRoute
   '/subscriptions/$status': typeof AuthenticatedSubscriptionsStatusRoute
   '/api/public/v1/devices': typeof ApiPublicV1DevicesRoute
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
@@ -124,16 +186,25 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/plans': typeof ApiPublicV1PlansRoute
   '/api/public/v1/usage': typeof ApiPublicV1UsageRoute
   '/api/public/v1/verify': typeof ApiPublicV1VerifyRoute
+  '/api/public/v1/auth/authorize': typeof ApiPublicV1AuthAuthorizeRoute
+  '/api/public/v1/auth/logout': typeof ApiPublicV1AuthLogoutRoute
+  '/api/public/v1/auth/token': typeof ApiPublicV1AuthTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/.well-known/assetlinks.json': typeof DotwellKnownAssetlinksDotjsonRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/devices': typeof AuthenticatedDevicesRoute
   '/payments': typeof AuthenticatedPaymentsRoute
   '/plans': typeof AuthenticatedPlansRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/account/forgot-password': typeof AccountForgotPasswordRoute
+  '/account/login': typeof AccountLoginRoute
+  '/account/reset-password': typeof AccountResetPasswordRoute
+  '/account/signup': typeof AccountSignupRoute
+  '/android/callback': typeof AndroidCallbackRoute
   '/subscriptions/$status': typeof AuthenticatedSubscriptionsStatusRoute
   '/api/public/v1/devices': typeof ApiPublicV1DevicesRoute
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
@@ -141,18 +212,27 @@ export interface FileRoutesByTo {
   '/api/public/v1/plans': typeof ApiPublicV1PlansRoute
   '/api/public/v1/usage': typeof ApiPublicV1UsageRoute
   '/api/public/v1/verify': typeof ApiPublicV1VerifyRoute
+  '/api/public/v1/auth/authorize': typeof ApiPublicV1AuthAuthorizeRoute
+  '/api/public/v1/auth/logout': typeof ApiPublicV1AuthLogoutRoute
+  '/api/public/v1/auth/token': typeof ApiPublicV1AuthTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/.well-known/assetlinks.json': typeof DotwellKnownAssetlinksDotjsonRoute
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/devices': typeof AuthenticatedDevicesRoute
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
   '/_authenticated/plans': typeof AuthenticatedPlansRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/account/forgot-password': typeof AccountForgotPasswordRoute
+  '/account/login': typeof AccountLoginRoute
+  '/account/reset-password': typeof AccountResetPasswordRoute
+  '/account/signup': typeof AccountSignupRoute
+  '/android/callback': typeof AndroidCallbackRoute
   '/_authenticated/subscriptions/$status': typeof AuthenticatedSubscriptionsStatusRoute
   '/api/public/v1/devices': typeof ApiPublicV1DevicesRoute
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
@@ -160,18 +240,27 @@ export interface FileRoutesById {
   '/api/public/v1/plans': typeof ApiPublicV1PlansRoute
   '/api/public/v1/usage': typeof ApiPublicV1UsageRoute
   '/api/public/v1/verify': typeof ApiPublicV1VerifyRoute
+  '/api/public/v1/auth/authorize': typeof ApiPublicV1AuthAuthorizeRoute
+  '/api/public/v1/auth/logout': typeof ApiPublicV1AuthLogoutRoute
+  '/api/public/v1/auth/token': typeof ApiPublicV1AuthTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
+    | '/.well-known/assetlinks.json'
     | '/audit'
     | '/dashboard'
     | '/devices'
     | '/payments'
     | '/plans'
     | '/settings'
+    | '/account/forgot-password'
+    | '/account/login'
+    | '/account/reset-password'
+    | '/account/signup'
+    | '/android/callback'
     | '/subscriptions/$status'
     | '/api/public/v1/devices'
     | '/api/public/v1/me'
@@ -179,16 +268,25 @@ export interface FileRouteTypes {
     | '/api/public/v1/plans'
     | '/api/public/v1/usage'
     | '/api/public/v1/verify'
+    | '/api/public/v1/auth/authorize'
+    | '/api/public/v1/auth/logout'
+    | '/api/public/v1/auth/token'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
+    | '/.well-known/assetlinks.json'
     | '/audit'
     | '/dashboard'
     | '/devices'
     | '/payments'
     | '/plans'
     | '/settings'
+    | '/account/forgot-password'
+    | '/account/login'
+    | '/account/reset-password'
+    | '/account/signup'
+    | '/android/callback'
     | '/subscriptions/$status'
     | '/api/public/v1/devices'
     | '/api/public/v1/me'
@@ -196,17 +294,26 @@ export interface FileRouteTypes {
     | '/api/public/v1/plans'
     | '/api/public/v1/usage'
     | '/api/public/v1/verify'
+    | '/api/public/v1/auth/authorize'
+    | '/api/public/v1/auth/logout'
+    | '/api/public/v1/auth/token'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/.well-known/assetlinks.json'
     | '/_authenticated/audit'
     | '/_authenticated/dashboard'
     | '/_authenticated/devices'
     | '/_authenticated/payments'
     | '/_authenticated/plans'
     | '/_authenticated/settings'
+    | '/account/forgot-password'
+    | '/account/login'
+    | '/account/reset-password'
+    | '/account/signup'
+    | '/android/callback'
     | '/_authenticated/subscriptions/$status'
     | '/api/public/v1/devices'
     | '/api/public/v1/me'
@@ -214,18 +321,30 @@ export interface FileRouteTypes {
     | '/api/public/v1/plans'
     | '/api/public/v1/usage'
     | '/api/public/v1/verify'
+    | '/api/public/v1/auth/authorize'
+    | '/api/public/v1/auth/logout'
+    | '/api/public/v1/auth/token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  DotwellKnownAssetlinksDotjsonRoute: typeof DotwellKnownAssetlinksDotjsonRoute
+  AccountForgotPasswordRoute: typeof AccountForgotPasswordRoute
+  AccountLoginRoute: typeof AccountLoginRoute
+  AccountResetPasswordRoute: typeof AccountResetPasswordRoute
+  AccountSignupRoute: typeof AccountSignupRoute
+  AndroidCallbackRoute: typeof AndroidCallbackRoute
   ApiPublicV1DevicesRoute: typeof ApiPublicV1DevicesRoute
   ApiPublicV1MeRoute: typeof ApiPublicV1MeRoute
   ApiPublicV1PaymentRequestsRoute: typeof ApiPublicV1PaymentRequestsRoute
   ApiPublicV1PlansRoute: typeof ApiPublicV1PlansRoute
   ApiPublicV1UsageRoute: typeof ApiPublicV1UsageRoute
   ApiPublicV1VerifyRoute: typeof ApiPublicV1VerifyRoute
+  ApiPublicV1AuthAuthorizeRoute: typeof ApiPublicV1AuthAuthorizeRoute
+  ApiPublicV1AuthLogoutRoute: typeof ApiPublicV1AuthLogoutRoute
+  ApiPublicV1AuthTokenRoute: typeof ApiPublicV1AuthTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -249,6 +368,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.well-known/assetlinks.json': {
+      id: '/.well-known/assetlinks.json'
+      path: '/.well-known/assetlinks.json'
+      fullPath: '/.well-known/assetlinks.json'
+      preLoaderRoute: typeof DotwellKnownAssetlinksDotjsonRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/audit': {
@@ -292,6 +418,41 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/account/forgot-password': {
+      id: '/account/forgot-password'
+      path: '/account/forgot-password'
+      fullPath: '/account/forgot-password'
+      preLoaderRoute: typeof AccountForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account/login': {
+      id: '/account/login'
+      path: '/account/login'
+      fullPath: '/account/login'
+      preLoaderRoute: typeof AccountLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account/reset-password': {
+      id: '/account/reset-password'
+      path: '/account/reset-password'
+      fullPath: '/account/reset-password'
+      preLoaderRoute: typeof AccountResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account/signup': {
+      id: '/account/signup'
+      path: '/account/signup'
+      fullPath: '/account/signup'
+      preLoaderRoute: typeof AccountSignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/android/callback': {
+      id: '/android/callback'
+      path: '/android/callback'
+      fullPath: '/android/callback'
+      preLoaderRoute: typeof AndroidCallbackRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/subscriptions/$status': {
       id: '/_authenticated/subscriptions/$status'
@@ -342,6 +503,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1VerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/v1/auth/authorize': {
+      id: '/api/public/v1/auth/authorize'
+      path: '/api/public/v1/auth/authorize'
+      fullPath: '/api/public/v1/auth/authorize'
+      preLoaderRoute: typeof ApiPublicV1AuthAuthorizeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/auth/logout': {
+      id: '/api/public/v1/auth/logout'
+      path: '/api/public/v1/auth/logout'
+      fullPath: '/api/public/v1/auth/logout'
+      preLoaderRoute: typeof ApiPublicV1AuthLogoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/auth/token': {
+      id: '/api/public/v1/auth/token'
+      path: '/api/public/v1/auth/token'
+      fullPath: '/api/public/v1/auth/token'
+      preLoaderRoute: typeof ApiPublicV1AuthTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -372,12 +554,21 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  DotwellKnownAssetlinksDotjsonRoute: DotwellKnownAssetlinksDotjsonRoute,
+  AccountForgotPasswordRoute: AccountForgotPasswordRoute,
+  AccountLoginRoute: AccountLoginRoute,
+  AccountResetPasswordRoute: AccountResetPasswordRoute,
+  AccountSignupRoute: AccountSignupRoute,
+  AndroidCallbackRoute: AndroidCallbackRoute,
   ApiPublicV1DevicesRoute: ApiPublicV1DevicesRoute,
   ApiPublicV1MeRoute: ApiPublicV1MeRoute,
   ApiPublicV1PaymentRequestsRoute: ApiPublicV1PaymentRequestsRoute,
   ApiPublicV1PlansRoute: ApiPublicV1PlansRoute,
   ApiPublicV1UsageRoute: ApiPublicV1UsageRoute,
   ApiPublicV1VerifyRoute: ApiPublicV1VerifyRoute,
+  ApiPublicV1AuthAuthorizeRoute: ApiPublicV1AuthAuthorizeRoute,
+  ApiPublicV1AuthLogoutRoute: ApiPublicV1AuthLogoutRoute,
+  ApiPublicV1AuthTokenRoute: ApiPublicV1AuthTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
