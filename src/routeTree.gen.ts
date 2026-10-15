@@ -19,6 +19,11 @@ import { Route as AuthenticatedDevicesRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated/payments'
 import { Route as AuthenticatedPlansRouteImport } from './routes/_authenticated/plans'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AccountForgotPasswordRouteImport } from './routes/account/forgot-password'
+import { Route as AccountLoginRouteImport } from './routes/account/login'
+import { Route as AccountResetPasswordRouteImport } from './routes/account/reset-password'
+import { Route as AccountSignupRouteImport } from './routes/account/signup'
+import { Route as AndroidCallbackRouteImport } from './routes/android/callback'
 import { Route as AuthenticatedSubscriptionsStatusRouteImport } from './routes/_authenticated/subscriptions.$status'
 import { Route as ApiPublicV1DevicesRouteImport } from './routes/api/public/v1/devices'
 import { Route as ApiPublicV1MeRouteImport } from './routes/api/public/v1/me'
@@ -79,6 +84,31 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AccountForgotPasswordRoute = AccountForgotPasswordRouteImport.update({
+  id: '/account/forgot-password',
+  path: '/account/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountLoginRoute = AccountLoginRouteImport.update({
+  id: '/account/login',
+  path: '/account/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountResetPasswordRoute = AccountResetPasswordRouteImport.update({
+  id: '/account/reset-password',
+  path: '/account/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountSignupRoute = AccountSignupRouteImport.update({
+  id: '/account/signup',
+  path: '/account/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AndroidCallbackRoute = AndroidCallbackRouteImport.update({
+  id: '/android/callback',
+  path: '/android/callback',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedSubscriptionsStatusRoute =
   AuthenticatedSubscriptionsStatusRouteImport.update({
@@ -144,6 +174,11 @@ export interface FileRoutesByFullPath {
   '/payments': typeof AuthenticatedPaymentsRoute
   '/plans': typeof AuthenticatedPlansRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/account/forgot-password': typeof AccountForgotPasswordRoute
+  '/account/login': typeof AccountLoginRoute
+  '/account/reset-password': typeof AccountResetPasswordRoute
+  '/account/signup': typeof AccountSignupRoute
+  '/android/callback': typeof AndroidCallbackRoute
   '/subscriptions/$status': typeof AuthenticatedSubscriptionsStatusRoute
   '/api/public/v1/devices': typeof ApiPublicV1DevicesRoute
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
@@ -165,6 +200,11 @@ export interface FileRoutesByTo {
   '/payments': typeof AuthenticatedPaymentsRoute
   '/plans': typeof AuthenticatedPlansRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/account/forgot-password': typeof AccountForgotPasswordRoute
+  '/account/login': typeof AccountLoginRoute
+  '/account/reset-password': typeof AccountResetPasswordRoute
+  '/account/signup': typeof AccountSignupRoute
+  '/android/callback': typeof AndroidCallbackRoute
   '/subscriptions/$status': typeof AuthenticatedSubscriptionsStatusRoute
   '/api/public/v1/devices': typeof ApiPublicV1DevicesRoute
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
@@ -188,6 +228,11 @@ export interface FileRoutesById {
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
   '/_authenticated/plans': typeof AuthenticatedPlansRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/account/forgot-password': typeof AccountForgotPasswordRoute
+  '/account/login': typeof AccountLoginRoute
+  '/account/reset-password': typeof AccountResetPasswordRoute
+  '/account/signup': typeof AccountSignupRoute
+  '/android/callback': typeof AndroidCallbackRoute
   '/_authenticated/subscriptions/$status': typeof AuthenticatedSubscriptionsStatusRoute
   '/api/public/v1/devices': typeof ApiPublicV1DevicesRoute
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
@@ -211,6 +256,11 @@ export interface FileRouteTypes {
     | '/payments'
     | '/plans'
     | '/settings'
+    | '/account/forgot-password'
+    | '/account/login'
+    | '/account/reset-password'
+    | '/account/signup'
+    | '/android/callback'
     | '/subscriptions/$status'
     | '/api/public/v1/devices'
     | '/api/public/v1/me'
@@ -232,6 +282,11 @@ export interface FileRouteTypes {
     | '/payments'
     | '/plans'
     | '/settings'
+    | '/account/forgot-password'
+    | '/account/login'
+    | '/account/reset-password'
+    | '/account/signup'
+    | '/android/callback'
     | '/subscriptions/$status'
     | '/api/public/v1/devices'
     | '/api/public/v1/me'
@@ -254,6 +309,11 @@ export interface FileRouteTypes {
     | '/_authenticated/payments'
     | '/_authenticated/plans'
     | '/_authenticated/settings'
+    | '/account/forgot-password'
+    | '/account/login'
+    | '/account/reset-password'
+    | '/account/signup'
+    | '/android/callback'
     | '/_authenticated/subscriptions/$status'
     | '/api/public/v1/devices'
     | '/api/public/v1/me'
@@ -271,6 +331,11 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   DotwellKnownAssetlinksDotjsonRoute: typeof DotwellKnownAssetlinksDotjsonRoute
+  AccountForgotPasswordRoute: typeof AccountForgotPasswordRoute
+  AccountLoginRoute: typeof AccountLoginRoute
+  AccountResetPasswordRoute: typeof AccountResetPasswordRoute
+  AccountSignupRoute: typeof AccountSignupRoute
+  AndroidCallbackRoute: typeof AndroidCallbackRoute
   ApiPublicV1DevicesRoute: typeof ApiPublicV1DevicesRoute
   ApiPublicV1MeRoute: typeof ApiPublicV1MeRoute
   ApiPublicV1PaymentRequestsRoute: typeof ApiPublicV1PaymentRequestsRoute
@@ -353,6 +418,41 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/account/forgot-password': {
+      id: '/account/forgot-password'
+      path: '/account/forgot-password'
+      fullPath: '/account/forgot-password'
+      preLoaderRoute: typeof AccountForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account/login': {
+      id: '/account/login'
+      path: '/account/login'
+      fullPath: '/account/login'
+      preLoaderRoute: typeof AccountLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account/reset-password': {
+      id: '/account/reset-password'
+      path: '/account/reset-password'
+      fullPath: '/account/reset-password'
+      preLoaderRoute: typeof AccountResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account/signup': {
+      id: '/account/signup'
+      path: '/account/signup'
+      fullPath: '/account/signup'
+      preLoaderRoute: typeof AccountSignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/android/callback': {
+      id: '/android/callback'
+      path: '/android/callback'
+      fullPath: '/android/callback'
+      preLoaderRoute: typeof AndroidCallbackRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/subscriptions/$status': {
       id: '/_authenticated/subscriptions/$status'
@@ -455,6 +555,11 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   DotwellKnownAssetlinksDotjsonRoute: DotwellKnownAssetlinksDotjsonRoute,
+  AccountForgotPasswordRoute: AccountForgotPasswordRoute,
+  AccountLoginRoute: AccountLoginRoute,
+  AccountResetPasswordRoute: AccountResetPasswordRoute,
+  AccountSignupRoute: AccountSignupRoute,
+  AndroidCallbackRoute: AndroidCallbackRoute,
   ApiPublicV1DevicesRoute: ApiPublicV1DevicesRoute,
   ApiPublicV1MeRoute: ApiPublicV1MeRoute,
   ApiPublicV1PaymentRequestsRoute: ApiPublicV1PaymentRequestsRoute,
