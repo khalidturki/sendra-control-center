@@ -34,6 +34,10 @@ import { Route as ApiPublicV1VerifyRouteImport } from './routes/api/public/v1/ve
 import { Route as ApiPublicV1AuthAuthorizeRouteImport } from './routes/api/public/v1/auth/authorize'
 import { Route as ApiPublicV1AuthLogoutRouteImport } from './routes/api/public/v1/auth/logout'
 import { Route as ApiPublicV1AuthTokenRouteImport } from './routes/api/public/v1/auth/token'
+import { Route as ApiPublicV1TransactionsFinalizeRouteImport } from './routes/api/public/v1/transactions/finalize'
+import { Route as ApiPublicV1TransactionsPendingRouteImport } from './routes/api/public/v1/transactions/pending'
+import { Route as ApiPublicV1TransactionsReconcileRouteImport } from './routes/api/public/v1/transactions/reconcile'
+import { Route as ApiPublicV1TransactionsReserveRouteImport } from './routes/api/public/v1/transactions/reserve'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -163,6 +167,30 @@ const ApiPublicV1AuthTokenRoute = ApiPublicV1AuthTokenRouteImport.update({
   path: '/api/public/v1/auth/token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicV1TransactionsFinalizeRoute =
+  ApiPublicV1TransactionsFinalizeRouteImport.update({
+    id: '/api/public/v1/transactions/finalize',
+    path: '/api/public/v1/transactions/finalize',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicV1TransactionsPendingRoute =
+  ApiPublicV1TransactionsPendingRouteImport.update({
+    id: '/api/public/v1/transactions/pending',
+    path: '/api/public/v1/transactions/pending',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicV1TransactionsReconcileRoute =
+  ApiPublicV1TransactionsReconcileRouteImport.update({
+    id: '/api/public/v1/transactions/reconcile',
+    path: '/api/public/v1/transactions/reconcile',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicV1TransactionsReserveRoute =
+  ApiPublicV1TransactionsReserveRouteImport.update({
+    id: '/api/public/v1/transactions/reserve',
+    path: '/api/public/v1/transactions/reserve',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -189,6 +217,10 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/auth/authorize': typeof ApiPublicV1AuthAuthorizeRoute
   '/api/public/v1/auth/logout': typeof ApiPublicV1AuthLogoutRoute
   '/api/public/v1/auth/token': typeof ApiPublicV1AuthTokenRoute
+  '/api/public/v1/transactions/finalize': typeof ApiPublicV1TransactionsFinalizeRoute
+  '/api/public/v1/transactions/pending': typeof ApiPublicV1TransactionsPendingRoute
+  '/api/public/v1/transactions/reconcile': typeof ApiPublicV1TransactionsReconcileRoute
+  '/api/public/v1/transactions/reserve': typeof ApiPublicV1TransactionsReserveRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -215,6 +247,10 @@ export interface FileRoutesByTo {
   '/api/public/v1/auth/authorize': typeof ApiPublicV1AuthAuthorizeRoute
   '/api/public/v1/auth/logout': typeof ApiPublicV1AuthLogoutRoute
   '/api/public/v1/auth/token': typeof ApiPublicV1AuthTokenRoute
+  '/api/public/v1/transactions/finalize': typeof ApiPublicV1TransactionsFinalizeRoute
+  '/api/public/v1/transactions/pending': typeof ApiPublicV1TransactionsPendingRoute
+  '/api/public/v1/transactions/reconcile': typeof ApiPublicV1TransactionsReconcileRoute
+  '/api/public/v1/transactions/reserve': typeof ApiPublicV1TransactionsReserveRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -243,6 +279,10 @@ export interface FileRoutesById {
   '/api/public/v1/auth/authorize': typeof ApiPublicV1AuthAuthorizeRoute
   '/api/public/v1/auth/logout': typeof ApiPublicV1AuthLogoutRoute
   '/api/public/v1/auth/token': typeof ApiPublicV1AuthTokenRoute
+  '/api/public/v1/transactions/finalize': typeof ApiPublicV1TransactionsFinalizeRoute
+  '/api/public/v1/transactions/pending': typeof ApiPublicV1TransactionsPendingRoute
+  '/api/public/v1/transactions/reconcile': typeof ApiPublicV1TransactionsReconcileRoute
+  '/api/public/v1/transactions/reserve': typeof ApiPublicV1TransactionsReserveRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -271,6 +311,10 @@ export interface FileRouteTypes {
     | '/api/public/v1/auth/authorize'
     | '/api/public/v1/auth/logout'
     | '/api/public/v1/auth/token'
+    | '/api/public/v1/transactions/finalize'
+    | '/api/public/v1/transactions/pending'
+    | '/api/public/v1/transactions/reconcile'
+    | '/api/public/v1/transactions/reserve'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -297,6 +341,10 @@ export interface FileRouteTypes {
     | '/api/public/v1/auth/authorize'
     | '/api/public/v1/auth/logout'
     | '/api/public/v1/auth/token'
+    | '/api/public/v1/transactions/finalize'
+    | '/api/public/v1/transactions/pending'
+    | '/api/public/v1/transactions/reconcile'
+    | '/api/public/v1/transactions/reserve'
   id:
     | '__root__'
     | '/'
@@ -324,6 +372,10 @@ export interface FileRouteTypes {
     | '/api/public/v1/auth/authorize'
     | '/api/public/v1/auth/logout'
     | '/api/public/v1/auth/token'
+    | '/api/public/v1/transactions/finalize'
+    | '/api/public/v1/transactions/pending'
+    | '/api/public/v1/transactions/reconcile'
+    | '/api/public/v1/transactions/reserve'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -345,6 +397,10 @@ export interface RootRouteChildren {
   ApiPublicV1AuthAuthorizeRoute: typeof ApiPublicV1AuthAuthorizeRoute
   ApiPublicV1AuthLogoutRoute: typeof ApiPublicV1AuthLogoutRoute
   ApiPublicV1AuthTokenRoute: typeof ApiPublicV1AuthTokenRoute
+  ApiPublicV1TransactionsFinalizeRoute: typeof ApiPublicV1TransactionsFinalizeRoute
+  ApiPublicV1TransactionsPendingRoute: typeof ApiPublicV1TransactionsPendingRoute
+  ApiPublicV1TransactionsReconcileRoute: typeof ApiPublicV1TransactionsReconcileRoute
+  ApiPublicV1TransactionsReserveRoute: typeof ApiPublicV1TransactionsReserveRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -524,6 +580,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1AuthTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/v1/transactions/finalize': {
+      id: '/api/public/v1/transactions/finalize'
+      path: '/api/public/v1/transactions/finalize'
+      fullPath: '/api/public/v1/transactions/finalize'
+      preLoaderRoute: typeof ApiPublicV1TransactionsFinalizeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/transactions/pending': {
+      id: '/api/public/v1/transactions/pending'
+      path: '/api/public/v1/transactions/pending'
+      fullPath: '/api/public/v1/transactions/pending'
+      preLoaderRoute: typeof ApiPublicV1TransactionsPendingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/transactions/reconcile': {
+      id: '/api/public/v1/transactions/reconcile'
+      path: '/api/public/v1/transactions/reconcile'
+      fullPath: '/api/public/v1/transactions/reconcile'
+      preLoaderRoute: typeof ApiPublicV1TransactionsReconcileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/transactions/reserve': {
+      id: '/api/public/v1/transactions/reserve'
+      path: '/api/public/v1/transactions/reserve'
+      fullPath: '/api/public/v1/transactions/reserve'
+      preLoaderRoute: typeof ApiPublicV1TransactionsReserveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -569,6 +653,10 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicV1AuthAuthorizeRoute: ApiPublicV1AuthAuthorizeRoute,
   ApiPublicV1AuthLogoutRoute: ApiPublicV1AuthLogoutRoute,
   ApiPublicV1AuthTokenRoute: ApiPublicV1AuthTokenRoute,
+  ApiPublicV1TransactionsFinalizeRoute: ApiPublicV1TransactionsFinalizeRoute,
+  ApiPublicV1TransactionsPendingRoute: ApiPublicV1TransactionsPendingRoute,
+  ApiPublicV1TransactionsReconcileRoute: ApiPublicV1TransactionsReconcileRoute,
+  ApiPublicV1TransactionsReserveRoute: ApiPublicV1TransactionsReserveRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

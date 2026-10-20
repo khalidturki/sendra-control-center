@@ -514,6 +514,66 @@ export type Database = {
         }
         Relationships: []
       }
+      transaction_reservations: {
+        Row: {
+          attempt_id: string
+          client_id: string
+          created_at: string
+          id: string
+          installation_id: string
+          outcome: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          subscription_id: string
+          transaction_id: string
+          usage_date: string
+        }
+        Insert: {
+          attempt_id: string
+          client_id: string
+          created_at?: string
+          id?: string
+          installation_id: string
+          outcome?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          subscription_id: string
+          transaction_id: string
+          usage_date?: string
+        }
+        Update: {
+          attempt_id?: string
+          client_id?: string
+          created_at?: string
+          id?: string
+          installation_id?: string
+          outcome?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          subscription_id?: string
+          transaction_id?: string
+          usage_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transaction_reservations_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transaction_reservations_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -694,6 +754,31 @@ export type Database = {
           _status: string
           _transaction_id: string
         }
+        Returns: Json
+      }
+      customer_reserve_transaction: {
+        Args: {
+          _attempt_id: string
+          _installation_id: string
+          _transaction_id: string
+        }
+        Returns: Json
+      }
+      customer_finalize_transaction: {
+        Args: {
+          _installation_id: string
+          _outcome: string
+          _reservation_id: string
+          _transaction_id: string
+        }
+        Returns: Json
+      }
+      admin_reconcile_transaction: {
+        Args: { _outcome: string; _reservation_id: string }
+        Returns: Json
+      }
+      admin_list_pending_transaction_reservations: {
+        Args: { _limit?: number }
         Returns: Json
       }
       customer_register_device: {

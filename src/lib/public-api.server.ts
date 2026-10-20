@@ -58,6 +58,7 @@ export function userClient(token: string) {
 export function dbError(error: { message?: string; code?: string }) {
   const msg = error.message ?? "";
   if (/JWT|Not signed in|invalid claim|token/i.test(msg) || error.code === "PGRST301") return json({ error: "UNAUTHORIZED" }, 401);
+  if (error.code === "42501") return json({ error: "FORBIDDEN" }, 403);
   if (error.code === "P0001") return json({ error: msg }, 400);
   console.error(error);
   return json({ error: "Unavailable" }, 500);

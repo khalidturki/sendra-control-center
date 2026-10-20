@@ -82,6 +82,19 @@ Implement the working database and admin authentication, not just a visual mock-
 
 Do not integrate the Android app yet. Finish the admin website and database first, then report which database tables, security policies and API functions were actually created and tested.
 
+## Android transaction reservation API
+
+Migration `0006_transaction_reservations.sql` adds the customer transaction lifecycle. Apply it only through the existing project's reviewed database migration process; deploying this source does not apply the migration or enable Android automation.
+
+- `POST /api/public/v1/transactions/reserve` — authenticated customer; requires `installation_id`, a lowercase SHA-256 `transaction_id` (never raw SMS text), and a UUID `attempt_id`. Database authorization verifies the owning customer, approved device, active unexpired subscription, duplicate state and daily allowance atomically. Only `authorized: true` permits execution. Retrying with the exact same customer, installation, transaction ID, and attempt ID returns the original reservation only while it remains unresolved; it never creates another reservation. Any different attempt or previously finalized/reconciled transaction is rejected. Use distinct transaction IDs for separate operations.
+- `POST /api/public/v1/transactions/finalize` — authenticated owner; requires `reservation_id`, matching `transaction_id` and `installation_id`. `SUCCESS` finalizes and counts usage exactly once. `UNKNOWN` leaves the reservation active. Customer `FAILED` reports are not accepted as proof and cannot release allowance.
+- `GET /api/public/v1/transactions/pending?limit=100` — admin-only list of unresolved reservations, containing opaque transaction hashes and identifiers only.
+- `POST /api/public/v1/transactions/reconcile` — admin-only `SUCCESS` or `FAILED` reconciliation. A confirmed failure releases the reserved allowance; an uncertain result must remain unresolved.
+
+For one incoming-money SMS that initiates two USSD operations, Android must reserve and finalize each operation separately using two stable, distinct transaction IDs (for example, IDs derived from the incoming SMS's stable deduplication identity plus the operation step). It must not start operation two until operation one is confirmed successful by the existing configured USSD success keyword. Each confirmed operation counts once; an unsuccessful response does not count. An interrupted/missing response remains unresolved and blocked from replay; it may be reported as `UNKNOWN`, but must never be reported as a confirmed `FAILED`. A service restart alone is not evidence that the USSD operation failed. The 898 message is input to the second operation only, never evidence that either operation succeeded. Preserve the existing SMS parsing, templates, keyword, Accessibility and Auto-BIN logic when implementing the Android caller.
+
+The API checks that a customer owns the reservation and that its state permits the transition. A customer-reported success is counted against that customer's allowance; the server cannot independently prove a carrier/USSD result without a trusted provider callback. Failure releases therefore require an authenticated admin reconciliation. Never enable live automation until the migration and endpoints are applied and verified in the existing production project, then separately integrate Android with the reservation lifecycle.
+
 This project was built with [Lovable](https://lovable.dev).
 
 ## Build with Lovable
