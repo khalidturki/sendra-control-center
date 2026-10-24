@@ -23,7 +23,7 @@ export const Route = createFileRoute("/api/public/v1/transactions/finalize")({
           !transactionId ||
           !HASHED_TRANSACTION_ID_RE.test(transactionId) ||
           !outcome ||
-          !["SUCCESS", "UNKNOWN"].includes(outcome)
+          !["DIALED", "NOT_DIALED", "SUCCESS", "FAILED", "UNKNOWN"].includes(outcome)
         ) {
           return json({ finalized: false, reason: "INVALID_REQUEST" }, 400);
         }

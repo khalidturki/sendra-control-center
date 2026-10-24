@@ -66,12 +66,12 @@ function SubsPage() {
           <div className="overflow-x-auto rounded-xl border bg-card">
             <table className="w-full text-sm">
               <thead className="border-b bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
-                <tr>{["Client ID", "Name", "Contact", "Plan", "Price", "Status", "Start", "Expiry", "Usage today", ""].map((h) => <th key={h} className="whitespace-nowrap px-4 py-3 font-medium">{h}</th>)}</tr>
+                <tr>{["Client ID", "Name", "Contact", "Plan", "Price", "Status", "Start", "Expiry", "Dial attempts today", ""].map((h) => <th key={h} className="whitespace-nowrap px-4 py-3 font-medium">{h}</th>)}</tr>
               </thead>
               <tbody className="divide-y">
                 {rows.map((r) => {
                   const lim = r.plan.daily_limit;
-                  const pct = lim ? Math.min(100, (r.used_today / lim) * 100) : 0;
+                  const pct = lim ? Math.min(100, ((r.used_today + r.reserved_today) / lim) * 100) : 0;
                   return (
                     <tr key={r.id} className="transition-colors hover:bg-muted/30">
                       <td className="px-4 py-3 font-mono text-xs">{r.client.client_code}</td>
@@ -83,7 +83,8 @@ function SubsPage() {
                       <td className="whitespace-nowrap px-4 py-3 text-xs">{formatDate(r.start_date)}</td>
                       <td className="whitespace-nowrap px-4 py-3 text-xs">{formatDate(r.expiry_date)}</td>
                       <td className="min-w-32 px-4 py-3">
-                        <p className="font-mono text-xs">{r.used_today.toLocaleString()} / {lim ? lim.toLocaleString() : "∞"}</p>
+                        <p className="font-mono text-xs">{r.dials_today.toLocaleString()} dials</p>
+                        <p className="text-[10px] text-muted-foreground">Quota held/used: {(r.used_today + r.reserved_today).toLocaleString()} / {lim ? lim.toLocaleString() : "∞"}{r.reserved_today ? ` · ${r.reserved_today} reserved` : ""}{r.legacy_successes_today ? ` · ${r.legacy_successes_today} legacy` : ""}</p>
                         {lim && <div className="mt-1 h-1.5 rounded-full bg-muted"><div className={`h-full rounded-full ${pct >= 100 ? "bg-suspended" : pct > 80 ? "bg-pending" : "bg-active"}`} style={{ width: `${pct}%` }} /></div>}
                       </td>
                       <td className="px-2 py-3">

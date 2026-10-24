@@ -451,6 +451,7 @@ export type Database = {
       usage_records: {
         Row: {
           client_id: string
+          counting_basis: string
           created_at: string
           id: string
           subscription_id: string | null
@@ -459,6 +460,7 @@ export type Database = {
         }
         Insert: {
           client_id: string
+          counting_basis?: string
           created_at?: string
           id?: string
           subscription_id?: string | null
@@ -467,6 +469,7 @@ export type Database = {
         }
         Update: {
           client_id?: string
+          counting_basis?: string
           created_at?: string
           id?: string
           subscription_id?: string | null

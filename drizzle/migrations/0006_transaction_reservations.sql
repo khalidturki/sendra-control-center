@@ -413,3 +413,165 @@ GRANT EXECUTE ON FUNCTION public.admin_reconcile_transaction(uuid, text)
   TO authenticated;
 GRANT EXECUTE ON FUNCTION public.admin_list_pending_transaction_reservations(integer)
   TO authenticated;
+
+-- Sendra 2.0 dial-attempt counting. This migration is still unpublished; existing usage rows
+-- are retained and identified as legacy successful-transaction usage.
+ALTER TABLE public.usage_records
+  ADD COLUMN counting_basis text NOT NULL DEFAULT 'LEGACY_SUCCESS'
+  CHECK (counting_basis IN ('LEGACY_SUCCESS', 'DIAL_ATTEMPT'));
+ALTER TABLE public.transaction_reservations
+  DROP CONSTRAINT IF EXISTS transaction_reservations_status_check,
+  DROP CONSTRAINT IF EXISTS transaction_reservations_check,
+  DROP CONSTRAINT IF EXISTS transaction_reservations_outcome_check;
+ALTER TABLE public.transaction_reservations
+  ADD CONSTRAINT transaction_reservations_status_check
+    CHECK (status IN ('RESERVED', 'COUNTED', 'RELEASED')),
+  ADD CONSTRAINT transaction_reservations_outcome_check
+    CHECK (outcome IS NULL OR outcome IN ('SUCCESS', 'FAILED', 'UNKNOWN', 'NOT_DIALED')),
+  ADD CONSTRAINT transaction_reservations_state_check CHECK (
+    (status = 'RESERVED' AND resolved_at IS NULL AND (outcome IS NULL OR outcome = 'UNKNOWN')) OR
+    (status = 'COUNTED' AND resolved_at IS NOT NULL AND outcome IN ('UNKNOWN', 'SUCCESS', 'FAILED')) OR
+    (status = 'RELEASED' AND resolved_at IS NOT NULL AND outcome = 'NOT_DIALED')
+  );
+ALTER TABLE public.transaction_reservations ADD COLUMN dialed_at timestamptz;
+
+CREATE OR REPLACE FUNCTION public._sub_state(_client_id uuid)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE c public.clients; s public.subscriptions; p public.plans;
+  used integer; dials integer; legacy integer; reserved integer; today date;
+BEGIN
+  SELECT * INTO c FROM public.clients WHERE id = _client_id;
+  PERFORM public.mark_expired_subscriptions();
+  SELECT * INTO s FROM public.subscriptions WHERE client_id = c.id
+   ORDER BY (status = 'ACTIVE') DESC, (status IN ('PENDING','SUSPENDED')) DESC, created_at DESC LIMIT 1;
+  today := public.usage_today();
+  SELECT count(*)::integer, count(*) FILTER (WHERE counting_basis = 'DIAL_ATTEMPT')::integer,
+         count(*) FILTER (WHERE counting_basis = 'LEGACY_SUCCESS')::integer
+    INTO used, dials, legacy FROM public.usage_records WHERE client_id = c.id AND usage_date = today;
+  SELECT count(*)::integer INTO reserved FROM public.transaction_reservations
+   WHERE client_id = c.id AND usage_date = today AND status = 'RESERVED';
+  IF s.id IS NULL THEN
+    RETURN jsonb_build_object('client_id', c.client_code, 'status', NULL, 'allowed', false,
+      'reason', 'NO_SUBSCRIPTION', 'used_today', used, 'dials_used_today', dials,
+      'legacy_successes_today', legacy, 'reserved_today', reserved, 'remaining_today', 0,
+      'usage_unit', 'DIAL_ATTEMPTS', 'usage_date', today);
+  END IF;
+  SELECT * INTO p FROM public.plans WHERE id = s.plan_id;
+  RETURN jsonb_build_object('client_id', c.client_code, 'status', s.status, 'plan_id', p.id, 'plan', p.name,
+    'daily_limit', p.daily_limit, 'unlimited', p.daily_limit IS NULL, 'used_today', used,
+    'dials_used_today', dials, 'legacy_successes_today', legacy, 'reserved_today', reserved,
+    'remaining_today', CASE WHEN p.daily_limit IS NULL THEN NULL ELSE greatest(p.daily_limit - used - reserved, 0) END,
+    'usage_unit', 'DIAL_ATTEMPTS', 'usage_date', today, 'start_date', s.start_date, 'expiry_date', s.expiry_date,
+    'allowed', s.status = 'ACTIVE' AND s.expiry_date > now() AND (p.daily_limit IS NULL OR used + reserved < p.daily_limit),
+    'reason', CASE WHEN s.status = 'PENDING' THEN 'PENDING_APPROVAL' WHEN s.status = 'SUSPENDED' THEN 'SUSPENDED'
+      WHEN s.status = 'EXPIRED' OR s.expiry_date <= now() THEN 'EXPIRED'
+      WHEN p.daily_limit IS NOT NULL AND used + reserved >= p.daily_limit THEN 'DAILY_LIMIT_REACHED' ELSE 'OK' END);
+END $$;
+
+CREATE OR REPLACE FUNCTION public.customer_finalize_transaction(
+  _installation_id text, _reservation_id uuid, _transaction_id text, _outcome text
+) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE c public.clients; r public.transaction_reservations; ins_id uuid; p public.plans; used integer; held integer;
+  v_outcome text := upper(coalesce(_outcome, ''));
+BEGIN
+  c := public._customer_client();
+  IF _installation_id IS NULL OR length(_installation_id) NOT BETWEEN 8 AND 200 OR _reservation_id IS NULL
+     OR _transaction_id IS NULL OR _transaction_id !~ '^[0-9a-f]{64}$'
+     OR v_outcome NOT IN ('DIALED', 'NOT_DIALED', 'SUCCESS', 'FAILED', 'UNKNOWN') THEN
+    RETURN jsonb_build_object('finalized', false, 'reason', 'INVALID_REQUEST');
+  END IF;
+  SELECT * INTO r FROM public.transaction_reservations WHERE id = _reservation_id AND client_id = c.id
+    AND installation_id = _installation_id AND transaction_id = _transaction_id FOR UPDATE;
+  IF NOT FOUND THEN RETURN jsonb_build_object('finalized', false, 'reason', 'RESERVATION_NOT_FOUND'); END IF;
+  IF v_outcome = 'DIALED' THEN
+    IF r.status = 'COUNTED' THEN RETURN jsonb_build_object('finalized', true, 'counted', true, 'already_finalized', true); END IF;
+    IF r.status <> 'RESERVED' THEN RETURN jsonb_build_object('finalized', false, 'reason', 'RESERVATION_ALREADY_RESOLVED'); END IF;
+    INSERT INTO public.usage_records (client_id, subscription_id, transaction_id, usage_date, counting_basis)
+    VALUES (r.client_id, r.subscription_id, r.transaction_id, r.usage_date, 'DIAL_ATTEMPT')
+    ON CONFLICT (client_id, transaction_id) DO NOTHING RETURNING id INTO ins_id;
+    IF ins_id IS NULL AND NOT EXISTS (SELECT 1 FROM public.usage_records WHERE client_id=r.client_id AND transaction_id=r.transaction_id AND counting_basis='DIAL_ATTEMPT') THEN
+      RETURN jsonb_build_object('finalized', false, 'reason', 'DUPLICATE_TRANSACTION');
+    END IF;
+    UPDATE public.transaction_reservations SET status='COUNTED', outcome='UNKNOWN', dialed_at=now(), resolved_at=now(), resolved_by=auth.uid()
+      WHERE id=r.id;
+    SELECT count(*)::integer INTO used FROM public.usage_records WHERE client_id=r.client_id AND usage_date=public.usage_today();
+    SELECT count(*)::integer INTO held FROM public.transaction_reservations
+      WHERE client_id=r.client_id AND usage_date=public.usage_today() AND status='RESERVED';
+    SELECT plans.* INTO p FROM public.plans plans JOIN public.subscriptions subs ON subs.plan_id=plans.id WHERE subs.id=r.subscription_id;
+    RETURN jsonb_build_object('finalized', true, 'counted', true, 'already_counted', ins_id IS NULL,
+      'used_today', used, 'dials_used_today', (SELECT count(*) FROM public.usage_records WHERE client_id=r.client_id AND usage_date=public.usage_today() AND counting_basis='DIAL_ATTEMPT'),
+      'reserved_today', held,
+      'remaining_today', CASE WHEN p.daily_limit IS NULL THEN NULL ELSE greatest(p.daily_limit-used-held,0) END);
+  ELSIF v_outcome = 'NOT_DIALED' THEN
+    IF r.status = 'RELEASED' THEN RETURN jsonb_build_object('finalized', true, 'released', true, 'already_finalized', true); END IF;
+    IF r.status <> 'RESERVED' THEN RETURN jsonb_build_object('finalized', false, 'reason', 'DIAL_ALREADY_COUNTED'); END IF;
+    UPDATE public.transaction_reservations SET status='RELEASED', outcome='NOT_DIALED', resolved_at=now(), resolved_by=auth.uid() WHERE id=r.id;
+    RETURN jsonb_build_object('finalized', true, 'released', true);
+  END IF;
+  IF r.status = 'RESERVED' THEN
+    IF v_outcome = 'UNKNOWN' THEN
+      UPDATE public.transaction_reservations SET outcome='UNKNOWN' WHERE id=r.id;
+      RETURN jsonb_build_object('finalized', false, 'reserved', true, 'reason', 'OUTCOME_UNKNOWN');
+    END IF;
+    RETURN jsonb_build_object('finalized', false, 'reason', 'DIAL_NOT_REPORTED');
+  END IF;
+  IF r.status <> 'COUNTED' THEN RETURN jsonb_build_object('finalized', false, 'reason', 'RESERVATION_ALREADY_RESOLVED'); END IF;
+  UPDATE public.transaction_reservations SET outcome=v_outcome WHERE id=r.id;
+  RETURN jsonb_build_object('finalized', true, 'counted', true, 'already_finalized', true);
+END $$;
+
+CREATE OR REPLACE FUNCTION public.admin_reconcile_transaction(_reservation_id uuid, _outcome text)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE r public.transaction_reservations; ins_id uuid; v_outcome text := upper(coalesce(_outcome,''));
+BEGIN
+  IF NOT public.is_admin() THEN RAISE EXCEPTION 'Not authorised' USING ERRCODE='42501'; END IF;
+  IF _reservation_id IS NULL OR v_outcome NOT IN ('DIALED','NOT_DIALED','SUCCESS','FAILED','UNKNOWN') THEN
+    RETURN jsonb_build_object('finalized',false,'reason','INVALID_REQUEST'); END IF;
+  SELECT * INTO r FROM public.transaction_reservations WHERE id=_reservation_id FOR UPDATE;
+  IF NOT FOUND THEN RETURN jsonb_build_object('finalized',false,'reason','RESERVATION_NOT_FOUND'); END IF;
+  IF v_outcome='DIALED' AND r.status='RESERVED' THEN
+    INSERT INTO public.usage_records(client_id,subscription_id,transaction_id,usage_date,counting_basis)
+    VALUES(r.client_id,r.subscription_id,r.transaction_id,r.usage_date,'DIAL_ATTEMPT')
+    ON CONFLICT(client_id,transaction_id) DO NOTHING RETURNING id INTO ins_id;
+    UPDATE public.transaction_reservations SET status='COUNTED',outcome='UNKNOWN',dialed_at=now(),resolved_at=now(),resolved_by=auth.uid() WHERE id=r.id;
+    RETURN jsonb_build_object('finalized',true,'counted',true,'already_counted',ins_id IS NULL);
+  ELSIF v_outcome='NOT_DIALED' AND r.status='RESERVED' THEN
+    UPDATE public.transaction_reservations SET status='RELEASED',outcome='NOT_DIALED',resolved_at=now(),resolved_by=auth.uid() WHERE id=r.id;
+    RETURN jsonb_build_object('finalized',true,'released',true);
+  ELSIF v_outcome IN ('SUCCESS','FAILED','UNKNOWN') AND r.status='COUNTED' THEN
+    UPDATE public.transaction_reservations SET outcome=v_outcome WHERE id=r.id;
+    RETURN jsonb_build_object('finalized',true,'counted',true);
+  ELSIF v_outcome='UNKNOWN' AND r.status='RESERVED' THEN
+    UPDATE public.transaction_reservations SET outcome='UNKNOWN' WHERE id=r.id;
+    RETURN jsonb_build_object('finalized',true,'reserved',true);
+  ELSIF (v_outcome='DIALED' AND r.status='COUNTED') OR (v_outcome='NOT_DIALED' AND r.status='RELEASED') THEN
+    RETURN jsonb_build_object('finalized',true,'already_finalized',true,'counted',r.status='COUNTED','released',r.status='RELEASED');
+  END IF;
+  RETURN jsonb_build_object('finalized',false,'reason','RESERVATION_ALREADY_RESOLVED');
+END $$;
+
+CREATE OR REPLACE FUNCTION public.admin_list_pending_transaction_reservations(_limit integer DEFAULT 100)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE result jsonb;
+BEGIN
+  IF NOT public.is_admin() THEN RAISE EXCEPTION 'Not authorised' USING ERRCODE='42501'; END IF;
+  SELECT coalesce(jsonb_agg(to_jsonb(rows)),'[]'::jsonb) INTO result FROM (
+    SELECT id AS reservation_id,client_id,subscription_id,installation_id,transaction_id,attempt_id,
+      usage_date,status,outcome,created_at,dialed_at FROM public.transaction_reservations
+    WHERE status='RESERVED' OR (status='COUNTED' AND outcome='UNKNOWN') ORDER BY created_at
+    LIMIT greatest(1,least(coalesce(_limit,100),500))
+  ) rows;
+  RETURN result;
+END $$;
+
+-- The legacy API-key endpoint remains authentication-compatible but no longer records success-based usage.
+CREATE OR REPLACE FUNCTION public.api_record_transaction(_client_code text,_api_key text,_transaction_id text,_status text)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$
+DECLARE c public.clients;
+BEGIN
+  SELECT * INTO c FROM public.clients WHERE client_code=_client_code AND api_key=_api_key;
+  IF NOT FOUND THEN RETURN jsonb_build_object('counted',false,'reason','INVALID_CREDENTIALS'); END IF;
+  IF _transaction_id IS NULL OR length(trim(_transaction_id))=0 OR length(_transaction_id)>200 THEN
+    RETURN jsonb_build_object('counted',false,'reason','INVALID_TRANSACTION_ID'); END IF;
+  RETURN jsonb_build_object('counted',false,'reason','RESERVATION_REQUIRED','usage_unit','DIAL_ATTEMPTS');
+END $$;

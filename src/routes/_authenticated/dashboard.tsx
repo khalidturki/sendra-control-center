@@ -31,21 +31,22 @@ function useDashboardExtras(tz?: string) {
       const [clients, payments, usage, audit] = await Promise.all([
         supabase.from("clients").select("id", { count: "exact", head: true }),
         supabase.from("payments").select("amount"),
-        supabase.from("usage_records").select("usage_date").gte("usage_date", sinceStr),
+        supabase.from("usage_records").select("usage_date,counting_basis").gte("usage_date", sinceStr),
         supabase.from("audit_logs").select("*").like("action", "subscription.%").order("created_at", { ascending: false }).limit(8),
       ]);
       for (const r of [clients, payments, usage, audit]) if (r.error) throw r.error;
       const revenue = (payments.data ?? []).reduce((a, p) => a + Number(p.amount), 0);
       const byDay = new Map<string, number>();
+      const legacyRows = (usage.data ?? []).filter((u) => u.counting_basis === "LEGACY_SUCCESS").length;
       for (let i = 13; i >= 0; i--) {
         byDay.set(new Intl.DateTimeFormat("en-CA", { timeZone: tz }).format(new Date(Date.now() - i * 86400000)), 0);
       }
-      for (const u of usage.data ?? []) byDay.set(u.usage_date, (byDay.get(u.usage_date) ?? 0) + 1);
+      for (const u of usage.data ?? []) if (u.counting_basis === "DIAL_ATTEMPT") byDay.set(u.usage_date, (byDay.get(u.usage_date) ?? 0) + 1);
       const trend = [...byDay.entries()].map(([date, sends]) => ({
         date: new Date(date + "T00:00:00").toLocaleDateString(undefined, { day: "numeric", month: "short" }),
         sends,
       }));
-      return { clients: clients.count ?? 0, revenue, trend, audit: audit.data ?? [] };
+      return { clients: clients.count ?? 0, revenue, trend, audit: audit.data ?? [], legacyRows };
     },
   });
 }
@@ -61,7 +62,7 @@ function Dashboard() {
 
   const list = subs.data ?? [];
   const c = (s: string) => list.filter((x) => x.status === s).length;
-  const usedToday = settings.data ? list.filter((s) => s.status === "ACTIVE").reduce((a, s) => a + s.used_today, 0) : 0;
+  const usedToday = settings.data ? list.filter((s) => s.status === "ACTIVE").reduce((a, s) => a + s.dials_today, 0) : 0;
   const todayUsage = extras.data?.trend.at(-1)?.sends ?? 0;
   const currency = settings.data?.currency ?? "USD";
 
@@ -80,8 +81,8 @@ function Dashboard() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Stat loading={loading} icon={Users} label="Total clients" value={extras.data?.clients ?? 0} hint={`${list.length} subscriptions`} accent />
         <Stat loading={loading} icon={Wallet} label="Recorded revenue" value={formatMoney(extras.data?.revenue, currency)} hint="All subscription payments" />
-        <Stat loading={loading} icon={Zap} label="Successful sends today" value={todayUsage.toLocaleString()} hint={`${usedToday.toLocaleString()} by active clients`} />
-        <Stat loading={loading} icon={CreditCard} label="Sends · last 14 days" value={totalSends.toLocaleString()} hint="Confirmed transactions only" />
+        <Stat loading={loading} icon={Zap} label="Dial attempts today" value={todayUsage.toLocaleString()} hint={`${usedToday.toLocaleString()} by active clients`} />
+        <Stat loading={loading} icon={CreditCard} label="Dial attempts · last 14 days" value={totalSends.toLocaleString()} hint={`${extras.data?.legacyRows ?? 0} legacy successful sends remain in historical data`} />
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -107,7 +108,7 @@ function Dashboard() {
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
         <div className="rounded-xl border bg-card p-5 lg:col-span-2">
           <h3 className="font-semibold">Usage trend</h3>
-          <p className="text-xs text-muted-foreground">Successful sends per day across all clients</p>
+          <p className="text-xs text-muted-foreground">USSD dialing attempts per day; legacy success records are excluded from this trend</p>
           <div className="mt-4 h-64">
             {loading ? <Skeleton className="h-full w-full" /> : (
               <ResponsiveContainer width="100%" height="100%">

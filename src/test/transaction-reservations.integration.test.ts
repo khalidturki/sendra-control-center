@@ -123,7 +123,7 @@ async function finalizeFor(
   fixture: Fixture,
   reservationId: string,
   txId: string,
-  outcome: "SUCCESS" | "UNKNOWN",
+  outcome: "DIALED" | "NOT_DIALED" | "SUCCESS" | "FAILED" | "UNKNOWN",
 ): Promise<ReservationResult> {
   if (!database) throw new Error("Test database is not configured.");
   const connection = await database.reserve();
@@ -207,7 +207,7 @@ dbDescribe("transaction reservation database integration", () => {
     try {
       await setAuthenticatedUser(connection, fixture.adminId);
       await connection`
-        SELECT public.admin_reconcile_transaction(${reservationId}::uuid, 'FAILED')
+        SELECT public.admin_reconcile_transaction(${reservationId}::uuid, 'NOT_DIALED')
       `;
     } finally {
       connection.release();
@@ -239,7 +239,41 @@ dbDescribe("transaction reservation database integration", () => {
     expect((await reserveFor(fixture, transactionId(8))).reason).toBe("DAILY_LIMIT_REACHED");
   });
 
-  it("authorizes and counts two distinct operations from one source independently", async () => {
+  it("releases a reservation only when the dial was definitively not initiated", async () => {
+    if (!database) return;
+    const txId = transactionId(15);
+    const created = await reserveFor(fixture, txId);
+    if (!created.reservation_id) throw new Error("Reservation response omitted its id.");
+    expect((await finalizeFor(fixture, created.reservation_id, txId, "NOT_DIALED")).released).toBe(
+      true,
+    );
+    const [usage] = await database<[{ count: number }]>`
+      SELECT count(*)::integer AS count FROM public.usage_records
+      WHERE client_id = ${fixture.clientId} AND transaction_id = ${txId}
+    `;
+    expect(usage.count).toBe(0);
+    expect((await reserveFor(fixture, transactionId(16))).authorized).toBe(true);
+  });
+
+  it("serializes repeated dial reports for one operation into one usage row", async () => {
+    if (!database) return;
+    const txId = transactionId(17);
+    const created = await reserveFor(fixture, txId);
+    if (!created.reservation_id) throw new Error("Reservation response omitted its id.");
+    const reports = await Promise.all([
+      finalizeFor(fixture, created.reservation_id, txId, "DIALED"),
+      finalizeFor(fixture, created.reservation_id, txId, "DIALED"),
+    ]);
+    expect(reports.every((result) => result.finalized)).toBe(true);
+    const [usage] = await database<[{ count: number; basis: string }]>`
+      SELECT count(*)::integer AS count, min(counting_basis) AS basis FROM public.usage_records
+      WHERE client_id = ${fixture.clientId} AND transaction_id = ${txId}
+    `;
+    expect(usage.count).toBe(1);
+    expect(usage.basis).toBe("DIAL_ATTEMPT");
+  });
+
+  it("counts each initiated dial once, regardless of outcome, and permits a second distinct dial", async () => {
     if (!database) return;
     await database`UPDATE public.plans SET daily_limit = 2 WHERE id = ${fixture.planId}`;
     const firstTxId = transactionId(11);
@@ -252,15 +286,21 @@ dbDescribe("transaction reservation database integration", () => {
       throw new Error("Reservation response omitted its id.");
     }
 
-    expect((await finalizeFor(fixture, first.reservation_id, firstTxId, "SUCCESS")).counted).toBe(
+    expect((await finalizeFor(fixture, first.reservation_id, firstTxId, "DIALED")).counted).toBe(
+      true,
+    );
+    expect(
+      (await finalizeFor(fixture, first.reservation_id, firstTxId, "DIALED")).already_finalized,
+    ).toBe(true);
+    expect((await finalizeFor(fixture, first.reservation_id, firstTxId, "FAILED")).counted).toBe(
+      true,
+    );
+    expect((await finalizeFor(fixture, second.reservation_id, secondTxId, "DIALED")).counted).toBe(
       true,
     );
     expect((await finalizeFor(fixture, second.reservation_id, secondTxId, "SUCCESS")).counted).toBe(
       true,
     );
-    expect(
-      (await finalizeFor(fixture, first.reservation_id, firstTxId, "SUCCESS")).already_finalized,
-    ).toBe(true);
     const [usage] = await database<[{ count: number }]>`
       SELECT count(*)::integer AS count FROM public.usage_records
       WHERE client_id = ${fixture.clientId} AND usage_date = public.usage_today()
@@ -269,7 +309,7 @@ dbDescribe("transaction reservation database integration", () => {
     expect((await reserveFor(fixture, transactionId(13))).reason).toBe("DAILY_LIMIT_REACHED");
   });
 
-  it("treats an existing usage row as already counted during success finalization", async () => {
+  it("preserves a legacy usage row and does not silently reclassify it as a dial", async () => {
     if (!database) return;
     const txId = transactionId(14);
     const reservation = await reserveFor(fixture, txId);
@@ -279,10 +319,8 @@ dbDescribe("transaction reservation database integration", () => {
       INSERT INTO public.usage_records (client_id, subscription_id, transaction_id, usage_date)
       VALUES (${fixture.clientId}, ${fixture.subscriptionId}, ${txId}, public.usage_today())
     `;
-    const finalized = await finalizeFor(fixture, reservation.reservation_id, txId, "SUCCESS");
-    expect(finalized.finalized).toBe(true);
-    expect(finalized.counted).toBe(false);
-    expect(finalized.already_counted).toBe(true);
+    const finalized = await finalizeFor(fixture, reservation.reservation_id, txId, "DIALED");
+    expect(finalized.reason).toBe("DUPLICATE_TRANSACTION");
     const [usage] = await database<[{ count: number }]>`
       SELECT count(*)::integer AS count FROM public.usage_records
       WHERE client_id = ${fixture.clientId} AND transaction_id = ${txId}
@@ -313,7 +351,7 @@ dbDescribe("transaction reservation database integration", () => {
           ${fixture.installationId}, ${first.reservation_id}::uuid, ${txId}, 'FAILED'
         ) AS result
       `;
-      expect(falseFailure[0].result.reason).toBe("INVALID_REQUEST");
+      expect(falseFailure[0].result.reason).toBe("DIAL_NOT_REPORTED");
 
       await setAuthenticatedUser(connection, fixture.adminId);
       const [unknownState] = await connection<[{ outcome: string | null }]>`
@@ -323,10 +361,10 @@ dbDescribe("transaction reservation database integration", () => {
       expect(unknownState.outcome).toBe("UNKNOWN");
       const reconciled = await connection<[{ result: ReservationResult }]>`
         SELECT public.admin_reconcile_transaction(
-          ${first.reservation_id}::uuid, 'FAILED'
+          ${first.reservation_id}::uuid, 'NOT_DIALED'
         ) AS result
       `;
-      expect(reconciled[0].result.reason).toBe("OK");
+      expect(reconciled[0].result.released).toBe(true);
       await setAuthenticatedUser(connection, fixture.userId);
       expect((await reserve(connection, fixture, txId)).reason).toBe("DUPLICATE_TRANSACTION");
       expect((await reserve(connection, fixture, transactionId(10))).authorized).toBe(true);

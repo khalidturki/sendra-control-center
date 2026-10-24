@@ -16,7 +16,7 @@ export const Route = createFileRoute("/api/public/v1/transactions/reconcile")({
           !reservationId ||
           !UUID_RE.test(reservationId) ||
           !outcome ||
-          !["SUCCESS", "FAILED"].includes(outcome)
+          !["DIALED", "NOT_DIALED", "SUCCESS", "FAILED", "UNKNOWN"].includes(outcome)
         ) {
           return json({ finalized: false, reason: "INVALID_REQUEST" }, 400);
         }
